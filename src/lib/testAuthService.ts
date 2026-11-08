@@ -9,6 +9,7 @@
  * 내부 구현만 API 호출(fetch 등)로 교체하면 화면 코드를 고치지 않아도 됩니다.
  */
 import { ContactMethod, normalizeContact } from './validation';
+import ajax from '../utils/ajax';
 
 export const IS_TEST_MODE = true;
 
@@ -36,16 +37,24 @@ interface PendingCode {
 
 /** 처음부터 로그인해 볼 수 있도록 넣어 둔 테스트 계정 */
 export const DEMO_ACCOUNT = {
+  /*
   name: '김서연',
   email: 'seoyeon.kim@email.com',
   phone: '010-1234-5678',
   password: 'Yeobaek!2026',
+  */
+  name: '',
+  email: '',
+  phone: '',
+  password: '',
 };
 
 const USERS_KEY = 'yeobaek.test.users';
 const SESSION_KEY = 'yeobaek.test.session';
+const MEMBER_KEY = 'yeobaek.session.member';   // ← 추가: 로그인한 회원 정보(JSON)
 
-const memory: { users: TestUser[] | null; session: string | null } = { users: null, session: null };
+const memory: { users: TestUser[] | null; session: string | null; member: TestUser | null } =
+  { users: null, session: null, member: null };
 const pending = new Map<string, PendingCode>();
 
 function seedUsers(): TestUser[] {
@@ -133,15 +142,29 @@ export async function registerAccount(input: {
   return { ok: true, user };
 }
 
+function toUser(m: { name: string; email?: string; phone?: string }): TestUser {
+  return { name: m.name, email: m.email ?? undefined, phone: m.phone ?? undefined, password: '' };
+}
+
 export type LoginResult = { ok: true; user: TestUser } | { ok: false; reason: 'invalid' };
 
 export async function login(method: ContactMethod, contact: string, password: string): Promise<LoginResult> {
+/*
   await wait();
   const user = findUser(method, contact);
   // 계정 존재 여부가 드러나지 않도록 같은 안내를 사용합니다.
   if (!user || user.password !== password) return { ok: false, reason: 'invalid' };
   setSession(user);
   return { ok: true, user };
+*/
+  try {
+    const { data } = await ajax.post('/auth/login', { method, contact, password });
+    localStorage.setItem('token', data.accessToken);
+    setSession(toUser(data.member));
+    return { ok: true, user: toUser(data.member) };
+  } catch {
+    return { ok: false, reason: 'invalid' };   // 400·403
+  }
 }
 
 export async function resetPassword(
@@ -165,15 +188,37 @@ export async function resetPassword(
 export function setSession(user: TestUser | null) {
   const id = user ? user.email ?? user.phone ?? null : null;
   memory.session = id;
+  memory.member = user ? { ...user, password: '' } : null;   // 비밀번호는 저장하지 않음
   try {
     if (id) window.localStorage.setItem(SESSION_KEY, id);
     else window.localStorage.removeItem(SESSION_KEY);
+
+    if (memory.member) {
+      window.localStorage.setItem(MEMBER_KEY, JSON.stringify(memory.member));
+    } else {
+      // 로그아웃: 회원 정보와 토큰을 함께 지운다
+      window.localStorage.removeItem(MEMBER_KEY);
+      window.localStorage.removeItem('token');
+      window.sessionStorage.removeItem('token');
+    }
   } catch {
     /* noop */
   }
 }
 
 export function getSessionUser(): TestUser | null {
+  // ① 메모리 → ② localStorage 저장값 순으로 확인
+  if (memory.member) return memory.member;
+  try {
+    const raw = window.localStorage.getItem(MEMBER_KEY);
+    if (raw) {
+      memory.member = JSON.parse(raw) as TestUser;
+      return memory.member;
+    }
+  } catch {
+    /* 깨진 값이면 아래 예전 방식으로 */
+  }
+
   let id = memory.session;
   if (!id) {
     try {
@@ -190,9 +235,12 @@ export function resetTestData() {
   pending.clear();
   memory.users = null;
   memory.session = null;
+  memory.member = null;                              // ← 추가
   try {
     window.localStorage.removeItem(USERS_KEY);
     window.localStorage.removeItem(SESSION_KEY);
+    window.localStorage.removeItem(MEMBER_KEY);      // ← 추가
+    window.localStorage.removeItem('token');         // ← 추가
   } catch {
     /* noop */
   }

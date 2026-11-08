@@ -31,9 +31,15 @@ ajax.interceptors.response.use(
 
             localStorage.removeItem("token");
             localStorage.removeItem("refreshToken");
+            sessionStorage.removeItem("token");                 // ← 추가
+
+            // 로그인 세션 (testAuthService.ts 의 SESSION_KEY · MEMBER_KEY 와 같은 이름)
+            localStorage.removeItem("yeobaek.test.session");    // ← 추가
+            localStorage.removeItem("yeobaek.session.member");  // ← 추가
 
             alert("시간이 너무 지나서 자동 로그아웃 되었어요! 다시 로그인 해주세요!");
-            window.location.href = "/user/login";
+            // window.location.href = "/user/login";
+            window.location.href = "/";
         }    
         
         return Promise.reject(error);
