@@ -19,7 +19,7 @@ import {
 type FieldKey = 'name' | 'contact' | 'password' | 'confirm' | 'consent';
 
 /** Mobile 02 Create Account · 계정 만들기 */
-export function CreateAccountScreen() {
+export function Signup() {
   const { back, push } = useNav();
   const menu = useAppMenu();
   const { signupDraft: d, setSignupDraft, showToast } = useAppState();

@@ -26,7 +26,7 @@ type Status = 'idle' | 'checking' | 'error' | 'success';
  *  - purpose "signup": 이메일/휴대폰 가입 인증 → 계정 생성 후 Mobile 08 Home
  *  - purpose "reset" : 비밀번호 재설정 인증 → Mobile 07 New Password
  */
-export function VerifyCodeScreen({ route }: { route: Extract<Route, { name: 'verify' }> }) {
+export function VerifyCode({ route }: { route: Extract<Route, { name: 'verify' }> }) {
   const { back, replace, reset } = useNav();
   const menu = useAppMenu();
   const { signupDraft, clearSignupDraft, showToast } = useAppState();

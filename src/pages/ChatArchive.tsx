@@ -6,10 +6,10 @@ import { useAppState } from '../lib/appState';
 import { todayISO } from '../lib/dates';
 import { Route, useNav } from '../lib/navigation';
 import { useWorld } from '../lib/worldStore';
-import { Bubble, longDate, memberLine } from './ChatScreen';
+import { Bubble, longDate, memberLine } from './GatheringChat';
 
 /** Mobile 22 Archived Conversation · 다시 읽는 인연 (읽기 전용) */
-export function ArchiveScreen({ route }: { route: Extract<Route, { name: 'archive' }> }) {
+export function ChatArchive({ route }: { route: Extract<Route, { name: 'archive' }> }) {
   const { back, canGoBack, reset, push } = useNav();
   const { showToast } = useAppState();
   const world = useWorld();

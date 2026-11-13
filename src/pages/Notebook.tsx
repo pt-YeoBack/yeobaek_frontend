@@ -10,12 +10,12 @@ import { Route, useNav } from '../lib/navigation';
 import { largeActivityPhoto } from '../lib/nearby';
 import { sortActivities, tripDates, useTrips } from '../lib/tripStore';
 import { useWorld } from '../lib/worldStore';
-import { KIND_LABEL } from './ConnectionsScreen';
-import { tripStatus, useNotebookStats } from './ProfileScreen';
-import { withWhom } from './tripFormat';
+import { KIND_LABEL } from './Map';
+import { tripStatus, useNotebookStats } from './MyPage';
+import { withWhom } from '../utils/tripFormat';
 
 /** Mobile 21 Notebook Day · 날짜별 수첩 기록 */
-export function NotebookScreen({ route }: { route: Extract<Route, { name: 'notebook' }> }) {
+export function Notebook({ route }: { route: Extract<Route, { name: 'notebook' }> }) {
   const { back, canGoBack, reset, replace, push } = useNav();
   const { showToast } = useAppState();
   const { getTrip, updateTrip } = useTrips();

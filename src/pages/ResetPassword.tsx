@@ -10,7 +10,7 @@ import { resetPassword } from '../lib/testAuthService';
 import { checkPassword, validateConfirm, validatePassword } from '../lib/validation';
 
 /** Mobile 07 New Password · 재설정 완료 */
-export function NewPasswordScreen({ route }: { route: Extract<Route, { name: 'newPassword' }> }) {
+export function ResetPassword({ route }: { route: Extract<Route, { name: 'newPassword' }> }) {
   const { back, reset } = useNav();
   const menu = useAppMenu();
   const { method, contact } = route;

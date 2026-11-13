@@ -18,7 +18,7 @@ const SAMPLE_COMPANIONS = [
 ];
 
 /** Mobile 08 Home · 첫 여행을 기다리며 */
-export function HomeScreen() {
+export function Home() {
   const { push } = useNav();
   const { showToast } = useAppState();
   const { trips, draft, startNewTrip, deleteTrip, discardDraft } = useTrips();

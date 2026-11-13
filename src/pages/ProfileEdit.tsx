@@ -31,7 +31,7 @@ function toAvatar(file: File): Promise<string> {
 }
 
 /** Mobile 21 (두 번째 프레임) · 프로필 수정 */
-export function ProfileEditScreen() {
+export function ProfileEdit() {
   const { back, canGoBack, reset } = useNav();
   const { showToast } = useAppState();
   const { profile, updateProfile } = useWorld();

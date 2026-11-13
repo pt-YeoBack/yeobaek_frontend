@@ -6,7 +6,7 @@ import { todayISO } from '../lib/dates';
 import { useNav } from '../lib/navigation';
 import { Trip, tripDates, tripTitle, useTrips } from '../lib/tripStore';
 import { useWorld } from '../lib/worldStore';
-import { DestinationThumb, tripDateRange } from './tripFormat';
+import { DestinationThumb, tripDateRange } from '../utils/tripFormat';
 
 /** 여행 상태 — 끝난 날짜 기준 */
 export function tripStatus(trip: Trip): string {
@@ -32,7 +32,7 @@ export function useNotebookStats() {
 }
 
 /** Mobile 20 Profile · 나의 수첩 */
-export function ProfileScreen() {
+export function MyPage() {
   const { push } = useNav();
   const { trips } = useTrips();
   const { profile } = useWorld();

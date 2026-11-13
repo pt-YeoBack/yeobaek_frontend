@@ -5,10 +5,10 @@ import jejuPhoto from '../assets/destination-jeju.jpg';
 import { useAppState } from '../lib/appState';
 import { useNav } from '../lib/navigation';
 import { Trip, tripTitle, useTrips } from '../lib/tripStore';
-import { DestinationThumb, tripDateRange, tripPeopleLine } from './tripFormat';
+import { DestinationThumb, tripDateRange, tripPeopleLine } from '../utils/tripFormat';
 
 /** Mobile 11 My Schedules · 나의 여행 */
-export function SchedulesScreen() {
+export function ScheduleList() {
   const { push } = useNav();
   const { showToast } = useAppState();
   const { trips, draft, startNewTrip } = useTrips();

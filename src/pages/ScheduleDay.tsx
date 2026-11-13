@@ -6,12 +6,12 @@ import { formatMDW, formatShort, ISODate } from '../lib/dates';
 import { Route, useNav } from '../lib/navigation';
 import { activityPhoto, findPlace, toMinutes, fromMinutes } from '../lib/nearby';
 import { sortActivities, tripDates, tripTitle, useTrips } from '../lib/tripStore';
-import { DestinationThumb, timezoneLine, tripDateRange } from './tripFormat';
+import { DestinationThumb, timezoneLine, tripDateRange } from '../utils/tripFormat';
 import { DayTabStrip } from '../components/DayTabStrip';
 import { RailList } from '../components/WorldParts';
 
 /** Mobile 12 Daily Itinerary · 날짜별 일정 (AI 추천 추가됨) */
-export function DayPlanScreen({ route }: { route: Extract<Route, { name: 'dayPlan' }> }) {
+export function ScheduleDay({ route }: { route: Extract<Route, { name: 'dayPlan' }> }) {
   const { push, back, canGoBack, reset, replace } = useNav();
   const { getTrip, editTrip } = useTrips();
   const trip = getTrip(route.tripId);

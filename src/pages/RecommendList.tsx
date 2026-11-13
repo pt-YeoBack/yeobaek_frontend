@@ -5,13 +5,13 @@ import { sparkles, thumbsDown, thumbsUpWhite } from '../components/icons';
 import { useAppState } from '../lib/appState';
 import { Route, useNav } from '../lib/navigation';
 import { formatDuration, NearbyPlace } from '../lib/nearby';
-import { MAX_COUNT, useNearby } from './nearbyShared';
+import { MAX_COUNT, useRecommend } from '../hooks/useRecommend';
 
 /** Mobile 14 AI Suggestions · 가까운 발견 (여백에 맞는 장소) */
-export function SuggestionsScreen({ route }: { route: Extract<Route, { name: 'suggestions' }> }) {
+export function RecommendList({ route }: { route: Extract<Route, { name: 'suggestions' }> }) {
   const { back, canGoBack, reset, push, backTo } = useNav();
   const { showToast } = useAppState();
-  const n = useNearby(route.tripId, route.day);
+  const n = useRecommend(route.tripId, route.day);
   const [asking, setAsking] = useState<string | null>(null);
 
   useEffect(() => {

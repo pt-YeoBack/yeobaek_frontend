@@ -9,7 +9,7 @@ import { findPlace, fromMinutes, toMinutes } from '../lib/nearby';
 import { Activity, sortActivities, useTrips } from '../lib/tripStore';
 
 /** Mobile 15 Review Change · 좋아요 선택 후 완료 */
-export function ReviewScreen({ route }: { route: Extract<Route, { name: 'review' }> }) {
+export function RecommendResult({ route }: { route: Extract<Route, { name: 'review' }> }) {
   const { back, backTo, resetTo, canGoBack } = useNav();
   const { showToast } = useAppState();
   const { getTrip, updateTrip } = useTrips();

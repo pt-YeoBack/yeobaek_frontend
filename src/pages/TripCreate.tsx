@@ -29,7 +29,7 @@ const MAX_PEOPLE = 10;
 const MAX_NIGHTS = 30;
 
 /** Mobile 09 New Plan · 목적지와 날짜 (1 / 2) */
-export function NewTripScreen({ route }: { route: Extract<Route, { name: 'newTrip' }> }) {
+export function TripCreate({ route }: { route: Extract<Route, { name: 'newTrip' }> }) {
   const { back, push, reset, canGoBack } = useNav();
   const { draft, updateDraft, startNewTrip } = useTrips();
   const [fallback] = useState(emptyTrip);

@@ -20,7 +20,7 @@ export function memberLine(g: Gathering, me: string, includeMe: boolean): string
 }
 
 /** Mobile 19 Group Chat · 수첩에 저장되는 대화 */
-export function ChatScreen({ route }: { route: Extract<Route, { name: 'chat' }> }) {
+export function GatheringChat({ route }: { route: Extract<Route, { name: 'chat' }> }) {
   const { back, canGoBack, reset, replace, push } = useNav();
   const { showToast } = useAppState();
   const world = useWorld();

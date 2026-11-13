@@ -10,7 +10,7 @@ import { useAppMenu } from '../lib/useAppMenu';
 import { ContactMethod, formatPhone, validateContact } from '../lib/validation';
 
 /** Mobile 04 Forgot Password · 계정 이메일 (휴대폰 번호 탭 추가) */
-export function ForgotPasswordScreen() {
+export function FindPassword() {
   const { back, push } = useNav();
   const menu = useAppMenu();
   const [method, setMethod] = useState<ContactMethod>('email');

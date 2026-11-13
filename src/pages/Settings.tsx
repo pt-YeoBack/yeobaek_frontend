@@ -10,7 +10,7 @@ import { resetTestData, setSession } from '../lib/testAuthService';
 import { KEYWORD_OPTIONS, TASTE_OPTIONS, useWorld } from '../lib/worldStore';
 
 /** Mobile 22 (두 번째 프레임) · 세부 설정 — 여행 취향 · 공개 범위 · 대화 보관 */
-export function SettingsScreen({ route }: { route: Extract<Route, { name: 'settings' }> }) {
+export function Settings({ route }: { route: Extract<Route, { name: 'settings' }> }) {
   const { back, canGoBack, reset } = useNav();
   const { showToast, clearSignupDraft } = useAppState();
   const { profile, updateProfile } = useWorld();

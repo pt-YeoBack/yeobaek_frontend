@@ -2,7 +2,7 @@
  * Mobile 20-1 회원 프로필 · 모임 대화에서 다른 참여자 닉네임을 눌렀을 때 보는 프로필
  * 서버가 없어 예시 데이터로 채운다. '느린 발걸음'은 Figma(359:701)에 그려진 내용을 그대로 옮겼고,
  * 나머지 참여자는 같은 형식으로 만든 예시이다(임의 추가). 이 기기의 모임 목록에 함께 있는 모임은
- * 화면에서 실제 모임 정보로 덧붙인다(MemberProfileScreen).
+ * 화면에서 실제 모임 정보로 덧붙인다(UserProfile).
  */
 import kyotoPhoto from '../assets/member-kyoto.jpg';
 import osakaPhoto from '../assets/member-osaka.jpg';

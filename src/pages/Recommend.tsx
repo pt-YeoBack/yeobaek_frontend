@@ -7,7 +7,7 @@ import { useAppState } from '../lib/appState';
 import { formatMDW } from '../lib/dates';
 import { Route, useNav } from '../lib/navigation';
 import { formatDuration, isDemoArea, Mood, MOODS, NearbyPlace, PLACE_CATEGORIES, PlaceCategory } from '../lib/nearby';
-import { MAX_COUNT, useNearby } from './nearbyShared';
+import { MAX_COUNT, useRecommend } from '../hooks/useRecommend';
 
 /** 일정 순서 핀 위치 (Figma 지도처럼 남쪽 → 북쪽으로 이어지게, 예시 좌표) */
 const STOP_POS: [number, number][] = [
@@ -15,10 +15,10 @@ const STOP_POS: [number, number][] = [
 ];
 
 /** Mobile 13 AI Nearby Recommendations · 좋아요로 일정 추가 */
-export function NearbyScreen({ route }: { route: Extract<Route, { name: 'nearby' }> }) {
+export function Recommend({ route }: { route: Extract<Route, { name: 'nearby' }> }) {
   const { back, canGoBack, reset, push } = useNav();
   const { showToast } = useAppState();
-  const n = useNearby(route.tripId, route.day);
+  const n = useRecommend(route.tripId, route.day);
   const [cats, setCats] = useState<PlaceCategory[]>(n.prefs.categories);
   const [mood, setMood] = useState<Mood>(n.prefs.mood);
   const [prefError, setPrefError] = useState('');

@@ -17,7 +17,7 @@ function nowTime() {
  * Figma에는 버튼만 있고 대화창 디자인이 없어, 기존 바텀 시트·말풍선 스타일로 만들었습니다.
  * 실제 AI가 아닌 규칙 기반 데모 응답기(lib/assistant.ts)를 씁니다.
  */
-export function AssistantSheet({ onClose }: { onClose: () => void }) {
+export function Chatbot({ onClose }: { onClose: () => void }) {
   const { push } = useNav();
   const world = useWorld();
   const { trips } = useTrips();

@@ -6,88 +6,88 @@ import { getSessionUser } from './lib/testAuthService';
 import { TripProvider, useTrips } from './lib/tripStore';
 import { WorldProvider, useWorld } from './lib/worldStore';
 import { applyTheme, deviceAccent, rememberDeviceAccent } from './lib/themeRuntime';
-import { ArchiveScreen } from './pages/ArchiveScreen';
-import { ChatScreen } from './pages/ChatScreen';
-import { ConnectionsScreen } from './pages/ConnectionsScreen';
-import { DayPlanScreen } from './pages/DayPlanScreen';
-import { GatheringNewScreen } from './pages/GatheringNewScreen';
-import { GatheringScreen } from './pages/GatheringScreen';
-import { NearbyScreen } from './pages/NearbyScreen';
-import { NotebookScreen } from './pages/NotebookScreen';
-import { ProfileEditScreen } from './pages/ProfileEditScreen';
-import { ProfileScreen } from './pages/ProfileScreen';
-import { ReviewScreen } from './pages/ReviewScreen';
-import { SchedulesScreen } from './pages/SchedulesScreen';
-import { MemberProfileScreen } from './pages/MemberProfileScreen';
-import { SettingsScreen } from './pages/SettingsScreen';
-import { SuggestionsScreen } from './pages/SuggestionsScreen';
-import { CheckInboxScreen } from './pages/CheckInboxScreen';
-import { CreateAccountScreen } from './pages/CreateAccountScreen';
-import { ForgotPasswordScreen } from './pages/ForgotPasswordScreen';
-import { HomeScreen } from './pages/HomeScreen';
-import { ItineraryScreen } from './pages/ItineraryScreen';
-import { LoginScreen } from './pages/LoginScreen';
-import { NewPasswordScreen } from './pages/NewPasswordScreen';
-import { NewTripScreen } from './pages/NewTripScreen';
-import { OnboardingScreen } from './pages/OnboardingScreen';
-import { SplashScreen } from './pages/SplashScreen';
-import { VerifyCodeScreen } from './pages/VerifyCodeScreen';
+import { ChatArchive } from './pages/ChatArchive';
+import { GatheringChat } from './pages/GatheringChat';
+import { MapPage } from './pages/Map';
+import { ScheduleDay } from './pages/ScheduleDay';
+import { GatheringCreate } from './pages/GatheringCreate';
+import { GatheringDetail } from './pages/GatheringDetail';
+import { Recommend } from './pages/Recommend';
+import { Notebook } from './pages/Notebook';
+import { ProfileEdit } from './pages/ProfileEdit';
+import { MyPage } from './pages/MyPage';
+import { RecommendResult } from './pages/RecommendResult';
+import { ScheduleList } from './pages/ScheduleList';
+import { UserProfile } from './pages/UserProfile';
+import { Settings } from './pages/Settings';
+import { RecommendList } from './pages/RecommendList';
+import { CheckInbox } from './pages/CheckInbox';
+import { Signup } from './pages/Signup';
+import { FindPassword } from './pages/FindPassword';
+import { Home } from './pages/Home';
+import { ScheduleAdd } from './pages/ScheduleAdd';
+import { Login } from './pages/Login';
+import { ResetPassword } from './pages/ResetPassword';
+import { TripCreate } from './pages/TripCreate';
+import { Onboarding } from './pages/Onboarding';
+import { Splash } from './pages/Splash';
+import { VerifyCode } from './pages/VerifyCode';
 
 function CurrentScreen() {
   const { route } = useNav();
   switch (route.name) {
     case 'splash':
-      return <SplashScreen route={route} />;
+      return <Splash route={route} />;
     case 'onboarding':
-      return <OnboardingScreen />;
+      return <Onboarding />;
     case 'signup':
-      return <CreateAccountScreen />;
+      return <Signup />;
     case 'login':
-      return <LoginScreen key={`${route.method}-${route.contact}`} route={route} />;
+      return <Login key={`${route.method}-${route.contact}`} route={route} />;
     case 'forgot':
-      return <ForgotPasswordScreen />;
+      return <FindPassword />;
     case 'checkInbox':
-      return <CheckInboxScreen route={route} />;
+      return <CheckInbox route={route} />;
     case 'verify':
-      return <VerifyCodeScreen key={`${route.purpose}-${route.contact}`} route={route} />;
+      return <VerifyCode key={`${route.purpose}-${route.contact}`} route={route} />;
     case 'newPassword':
-      return <NewPasswordScreen route={route} />;
+      return <ResetPassword route={route} />;
     case 'home':
-      return <HomeScreen />;
+      return <Home />;
     case 'newTrip':
-      return <NewTripScreen route={route} />;
+      return <TripCreate route={route} />;
     case 'itinerary':
-      return <ItineraryScreen route={route} />;
+      return <ScheduleAdd route={route} />;
     case 'schedules':
-      return <SchedulesScreen />;
+      return <ScheduleList />;
     case 'dayPlan':
-      return <DayPlanScreen key={route.tripId} route={route} />;
+      return <ScheduleDay key={route.tripId} route={route} />;
     case 'nearby':
-      return <NearbyScreen key={`${route.tripId}-${route.day}`} route={route} />;
+      return <Recommend key={`${route.tripId}-${route.day}`} route={route} />;
     case 'suggestions':
-      return <SuggestionsScreen key={`${route.tripId}-${route.day}`} route={route} />;
+      return <RecommendList key={`${route.tripId}-${route.day}`} route={route} />;
     case 'review':
-      return <ReviewScreen key={route.activityId} route={route} />;
+      return <RecommendResult key={route.activityId} route={route} />;
     case 'connections':
-      return <ConnectionsScreen route={route} />;
+      return <MapPage route={route} />;
     case 'gathering':
-      return <GatheringScreen key={route.id} route={route} />;
+      return <GatheringDetail key={route.id} route={route} />;
     case 'gatheringNew':
-      return <GatheringNewScreen />;
+      return <GatheringCreate />;
     case 'chat':
-      return <ChatScreen key={route.id} route={route} />;
+      return <GatheringChat key={route.id} route={route} />;
     case 'profile':
-      return <ProfileScreen />;
+      return <MyPage />;
     case 'notebook':
-      return <NotebookScreen key={route.tripId} route={route} />;
+      return <Notebook key={route.tripId} route={route} />;
     case 'archive':
-      return <ArchiveScreen key={route.gatheringId} route={route} />;
+      return <ChatArchive key={route.gatheringId} route={route} />;
     case 'profileEdit':
-      return <ProfileEditScreen />;
+      return <ProfileEdit />;
     case 'settings':
-      return <SettingsScreen route={route} />;
+      return <Settings route={route} />;
     case 'member':
-      return <MemberProfileScreen route={route} />;
+      return <UserProfile route={route} />;
     default:
       return null;
   }

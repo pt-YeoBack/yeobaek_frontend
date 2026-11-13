@@ -15,7 +15,7 @@ import { displayContact } from '../lib/validation';
  * Mobile 05 Check Email · 이메일 확인 (이메일 가입)
  * Mobile 05.2 Check Message · 메세지함 확인 (휴대폰 가입)
  */
-export function CheckInboxScreen({ route }: { route: Extract<Route, { name: 'checkInbox' }> }) {
+export function CheckInbox({ route }: { route: Extract<Route, { name: 'checkInbox' }> }) {
   const { back, push } = useNav();
   const menu = useAppMenu();
   const { showToast } = useAppState();

@@ -8,7 +8,7 @@ import { dayKey, useWorld } from '../lib/worldStore';
 export const BASE_COUNT = 3;
 export const MAX_COUNT = 5;
 
-export function useNearby(tripId: string, day: string) {
+export function useRecommend(tripId: string, day: string) {
   const { getTrip, updateTrip } = useTrips();
   const world = useWorld();
   const { push } = useNav();

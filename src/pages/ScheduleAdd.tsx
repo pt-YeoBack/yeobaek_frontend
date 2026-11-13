@@ -32,7 +32,7 @@ function nextTime(list: Activity[]): string {
 }
 
 /** Mobile 10 Add Itinerary · 내 손으로 계획 (2 / 2) */
-export function ItineraryScreen({ route }: { route: Extract<Route, { name: 'itinerary' }> }) {
+export function ScheduleAdd({ route }: { route: Extract<Route, { name: 'itinerary' }> }) {
   const { back, push, reset, resetTo, backTo, replace, canGoBack } = useNav();
   const { showToast } = useAppState();
   const { draft, updateDraft, saveDraft, trips } = useTrips();

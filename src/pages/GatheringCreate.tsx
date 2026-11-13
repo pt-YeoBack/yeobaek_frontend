@@ -75,7 +75,7 @@ function shrink(file: File): Promise<string> {
 }
 
 /** Mobile 18 (두 번째 프레임) · 모임 만들기 */
-export function GatheringNewScreen() {
+export function GatheringCreate() {
   const { back, canGoBack, reset, replace } = useNav();
   const { showToast } = useAppState();
   const { trips } = useTrips();

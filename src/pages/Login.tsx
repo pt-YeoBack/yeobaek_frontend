@@ -9,7 +9,7 @@ import { useAppMenu } from '../lib/useAppMenu';
 import { ContactMethod, formatPhone, validateContact } from '../lib/validation';
 
 /** Mobile 03 Login · 다시 만나는 여백 */
-export function LoginScreen({ route }: { route: Extract<Route, { name: 'login' }> }) {
+export function Login({ route }: { route: Extract<Route, { name: 'login' }> }) {
   const { back, push, reset, canGoBack } = useNav();
   const menu = useAppMenu();
   const [method, setMethod] = useState<ContactMethod>(route.method ?? 'email');

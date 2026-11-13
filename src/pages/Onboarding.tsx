@@ -10,7 +10,7 @@ const FEATURES = [
 ];
 
 /** Mobile 01B Onboarding · 계획 사이 새로운 발견 */
-export function OnboardingScreen() {
+export function Onboarding() {
   const { push, replace } = useNav();
 
   return (

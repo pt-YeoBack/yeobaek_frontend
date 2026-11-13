@@ -5,7 +5,7 @@ import { Route, useNav } from '../lib/navigation';
 import { getSessionUser } from '../lib/testAuthService';
 
 /** Mobile 01 First Launch · 여백 로고 → 3초 후(또는 로고를 누르면) Mobile 01B 로 이동 */
-export function SplashScreen({ route }: { route?: Extract<Route, { name: 'splash' }> }) {
+export function Splash({ route }: { route?: Extract<Route, { name: 'splash' }> }) {
   const { replace } = useNav();
   // 이미 로그인한 테스트 세션이 있으면 온보딩 대신 홈으로 이동
   const next: Route = getSessionUser() ? { name: 'home', welcome: 'login' } : { name: 'onboarding' };

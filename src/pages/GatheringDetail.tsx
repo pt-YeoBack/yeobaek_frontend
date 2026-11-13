@@ -28,7 +28,7 @@ import { useAppState } from '../lib/appState';
 import { formatMDW, formatShort } from '../lib/dates';
 import { Route, useNav } from '../lib/navigation';
 import { Gathering, Member, useWorld } from '../lib/worldStore';
-import { KIND_LABEL } from './ConnectionsScreen';
+import { KIND_LABEL } from './Map';
 
 export function gatheringPhoto(g: Gathering): string | undefined {
   if (g.photo === 'sushi') return sushiPhoto;
@@ -47,7 +47,7 @@ const MEMBER_ICONS = {
 } as const;
 
 /** Mobile 17 Dining Gathering · 함께하는 저녁 / Mobile 18 Sightseeing Gathering · 아사쿠사 산책 */
-export function GatheringScreen({ route }: { route: Extract<Route, { name: 'gathering' }> }) {
+export function GatheringDetail({ route }: { route: Extract<Route, { name: 'gathering' }> }) {
   const { back, canGoBack, reset, push } = useNav();
   const { showToast } = useAppState();
   const world = useWorld();

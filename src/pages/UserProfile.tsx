@@ -5,7 +5,7 @@ import { useAppState } from '../lib/appState';
 import { Route, useNav } from '../lib/navigation';
 import { getMemberProfile, MemberPost } from '../lib/members';
 import { Gathering, useWorld } from '../lib/worldStore';
-import { gatheringPhoto } from './GatheringScreen';
+import { gatheringPhoto } from './GatheringDetail';
 
 type Post = MemberPost & { gatheringId?: string };
 
@@ -18,7 +18,7 @@ function dotDate(iso: string) {
  * 모임 대화(19)·저장된 대화(22)에서 다른 참여자의 닉네임을 누르면 열린다.
  * 친구 신청·신고는 서버가 없어 테스트 동작으로만 표시한다.
  */
-export function MemberProfileScreen({ route }: { route: Extract<Route, { name: 'member' }> }) {
+export function UserProfile({ route }: { route: Extract<Route, { name: 'member' }> }) {
   const { back, canGoBack, reset, push } = useNav();
   const { showToast } = useAppState();
   const world = useWorld();

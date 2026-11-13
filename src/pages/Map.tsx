@@ -8,7 +8,7 @@ import { formatMDW } from '../lib/dates';
 import { Route, useNav } from '../lib/navigation';
 import { tripDates, useTrips } from '../lib/tripStore';
 import { Gathering, useWorld } from '../lib/worldStore';
-import { AssistantSheet } from './AssistantSheet';
+import { Chatbot } from './Chatbot';
 
 type Filter = 'all' | 'dining' | 'sightseeing';
 const FILTERS: { key: Filter; label: string }[] = [
@@ -20,7 +20,7 @@ const FILTERS: { key: Filter; label: string }[] = [
 export const KIND_LABEL = { dining: '식사', sightseeing: '관광지' } as const;
 
 /** Mobile 16 Connections · 지금의 인연 */
-export function ConnectionsScreen({ route }: { route: Extract<Route, { name: 'connections' }> }) {
+export function MapPage({ route }: { route: Extract<Route, { name: 'connections' }> }) {
   const { push, replace } = useNav();
   const { showToast } = useAppState();
   const { trips } = useTrips();
@@ -178,7 +178,7 @@ export function ConnectionsScreen({ route }: { route: Extract<Route, { name: 'co
         </section>
       </div>
 
-      {assistantOpen && <AssistantSheet onClose={() => setAssistant(false)} />}
+      {assistantOpen && <Chatbot onClose={() => setAssistant(false)} />}
 
       {sheet && (
         <BottomSheet title="모임 보기 설정" onClose={() => setSheet(false)}>
