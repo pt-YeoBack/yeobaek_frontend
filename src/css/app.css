@@ -2717,6 +2717,146 @@ button.chip {
   color: var(--brand-600);
 }
 
+/* //추가 모임 만들기 "지도" 줄: 왼쪽 "지도"(모이는 위치와 같은 글자) · 오른쪽 "장소 선택 ›" → 누르면 화면 가득 지도 */
+.place-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--brand-300);
+  border-radius: 16px;
+  background: #ffffff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.place-row-value { /* //추가 고른 장소명 또는 "장소 선택" */
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--brand-600);
+}
+
+/* //추가 화면 가득 지도 (GatheringPlacePicker) : 휴대폰에서는 화면 전체, PC 에서는 앱 폭(402px) 가운데 */
+.place-full {
+  position: fixed;
+  inset: 0;
+  z-index: 40; /* 시트(.sheet-backdrop)와 같은 층 → 장소명 시트는 나중에 그려져서 위에 뜸 */
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 402px;
+  margin: 0 auto;
+  background: #ffffff;
+  box-shadow: 0 0 40px rgba(15, 23, 42, 0.18);
+}
+
+.place-full-head { /* 닫기 · 안내 · 검색 */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px 10px;
+}
+
+.place-full-close {
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 30px;
+  line-height: 1;
+  color: var(--brand-700);
+}
+
+.place-full-title {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.45;
+  color: var(--brand-700);
+}
+
+.place-pin { /* 가운데 고정 핀: 핀 끝이 지도 정가운데를 가리키게 위로 올림. 눌러도 지도가 움직이도록 클릭은 통과 */
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  transform: translate(-50%, -100%);
+  pointer-events: none;
+}
+
+.place-pin-tip { /* "지도를 움직여서 선택해 보세요" 말풍선 */
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.85);
+  color: #ffffff;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.place-locate-fab { /* 현위치 동그라미 버튼 (구글 확대/축소 버튼 위쪽) */
+  position: absolute;
+  right: 12px;
+  bottom: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--brand-300);
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
+}
+
+.place-full-foot { /* "선택 완료" 자리 (아이폰 아래 홈 막대만큼 여백) */
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+}
+
+.place-name-form { /* 장소명 시트 안: 입력 · 주소 · 등록 */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* //추가 보기 전용 지도 (GatheringPlaceViewer): 장소명 · 주소 · 안내 */
+.place-view-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+  color: var(--brand-600);
+}
+
+.place-view-info strong {
+  font-size: 16px;
+  color: var(--brand-700);
+}
+
+.place-view-empty { /* 위치를 못 받았을 때 지도 자리 */
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: #eef3fa;
+  font-size: 13px;
+  color: var(--brand-600);
+}
+
+.place-view-note {
+  margin: 0 0 10px;
+  text-align: center;
+}
+
 .form-block .inline-error,
 .ask-card .inline-error {
   margin-top: 0;

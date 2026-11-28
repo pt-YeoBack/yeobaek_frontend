@@ -1,4 +1,7 @@
-import { PointerEvent, useRef, useState } from 'react';
+// //수정 useEffect 추가: "화면이 그려진 뒤에 할 일"(여기서는 서버에서 모임 목록 받기)을 등록하는 도구
+import { PointerEvent, useEffect, useRef, useState } from 'react';
+// //추가 서버에서 모임 목록을 받는 함수(fetchTogethers)와, 서버 모양 → 화면 모양 번역기(toGathering)
+import { fetchTogethers, SERVER_PREFIX, toGathering } from '../api/together'; // //수정 SERVER_PREFIX 추가 → 'srv-' + 번호로 참여 중 id 만들기
 import { ScreenShell } from '../components/ScreenShell';
 import { BellButton, BottomNav, BottomSheet } from '../components/TripParts';
 import { MiniMap, Switch } from '../components/WorldParts';
@@ -6,6 +9,11 @@ import { clover, flag, mapPin22, sliders, sparkles } from '../components/icons';
 import { useAppState } from '../lib/appState';
 import { formatMDW } from '../lib/dates';
 import { Route, useNav } from '../lib/navigation';
+// [지도 시작] //추가 카카오api 넣어야함 : 지도 모듈은 src/map/index.ts 에서만 import (가이드 규칙)
+// import { PlacesMap, providerForRegion } from '../map';
+// [지도 끝]
+// //추가 로그인할 때 저장해 둔 내 정보(회원 번호 id 포함)를 꺼내는 함수 → "모임장이 나인지" 판단용
+import { getSessionUser } from '../lib/session';
 import { tripDates, useTrips } from '../lib/tripStore';
 import { Gathering, useWorld } from '../lib/worldStore';
 import { Chatbot } from './Chatbot';
@@ -24,7 +32,8 @@ export function MapPage({ route }: { route: Extract<Route, { name: 'connections'
   const { push, replace } = useNav();
   const { showToast } = useAppState();
   const { trips } = useTrips();
-  const { gatherings, isJoined, memberCount } = useWorld();
+  // //수정 putServerGatherings 추가: 서버에서 받은 목록을 저장소(worldStore)에 넣는 함수
+  const { gatherings, isJoined, memberCount, putServerGatherings } = useWorld();
   const [filter, setFilter] = useState<Filter>('all');
   const [selected, setSelected] = useState<string | null>(null);
   const [sheet, setSheet] = useState(false);
@@ -37,6 +46,25 @@ export function MapPage({ route }: { route: Extract<Route, { name: 'connections'
   // 도우미 창이 열린 상태도 화면 기록에 남겨 새로고침·뒤로 가기 후에도 유지
   const assistantOpen = Boolean(route.assistant);
   const setAssistant = (open: boolean) => replace({ name: 'connections', assistant: open || undefined });
+
+  // //추가 인연 화면에 들어오면 서버에서 모임 목록을 받아 저장소에 넣어요
+  //  비유: 가게 문을 열면(화면이 뜨면) 먼저 창고(서버)에 "오늘 모임 뭐 있어요?" 하고 물어보는 것.
+  //  - useEffect(할 일, [재료]) : 화면이 처음 뜰 때 한 번, 그리고 [재료]가 바뀔 때만 다시 실행
+  //    putServerGatherings 는 바뀌지 않는 함수라서 사실상 "화면이 뜰 때 한 번" 실행돼요
+  //  - .then(r => ...) : 서버 답이 오면 그때 실행할 일
+  //  - 실패하면(r.ok 가 false) 아무것도 안 해요 → 예시 모임만 보이고 화면은 그대로 동작
+  useEffect(() => {
+    const myId = getSessionUser()?.id ?? null; // ?. : 로그인 정보가 없으면 오류 대신 undefined, ?? null : 그러면 null
+    fetchTogethers().then((r) => {
+      // filter: 끝난(ended) 모임은 목록에서 빼요 / map: 하나씩 화면 모양으로 번역
+      if (!r.ok) return; // //수정 실패(서버 꺼짐 등)면 예시 모임만 보여 줌
+      const open = r.list.filter((t) => t.togetherStatus !== 'ended'); // //수정 끝난 모임은 목록에서 빼기 (기존과 같음)
+      putServerGatherings(
+        open.map((t) => toGathering(t, myId)),
+        open.filter((t) => t.joined).map((t) => `${SERVER_PREFIX}${t.id}`), // //추가 서버가 준 joined → 카드 "참여 중" · "참여한 모임만 보기" 가 새로고침 뒤에도 맞음
+      );
+    });
+  }, [putServerGatherings]);
 
   const list = gatherings.filter((g) => (filter === 'all' || g.kind === filter) && (!joinedOnly || isJoined(g.id)));
 
@@ -87,6 +115,18 @@ export function MapPage({ route }: { route: Extract<Route, { name: 'connections'
       </div>
 
       <div className={`conn-stage ${expanded ? 'is-expanded' : ''}`}>
+        {/* //수정 아래 style: 목록 패널이 카카오·구글 로고, 핀, 도우미 버튼을 가리지 않게 패널 위까지만 지도 */}
+        {/* [지도 시작] //추가 카카오api 넣어야함 : 켤 때 바로 아래 <MiniMap ...> 여는 태그를 이것으로 바꾸고, </MiniMap> 은 </PlacesMap> 으로
+        <PlacesMap
+          provider={providerForRegion(trips[0]?.destination?.region)}
+          items={list.map((g) => ({ key: g.id, title: g.title, placeId: g.placeId, selected: selected === g.id }))}
+          onSelect={(id) => {
+            setSelected(id);
+            document.getElementById(`gcard-${id}`)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+          }}
+          style={{ position: 'absolute', inset: '0 0 calc(var(--panel-peek) + 10px)', height: 'auto' }}
+        >
+        [지도 끝] */}
         <MiniMap
           variant="full"
           height="100%"

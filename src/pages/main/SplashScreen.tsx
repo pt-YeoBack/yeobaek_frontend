@@ -1,8 +1,12 @@
 import { useEffect } from 'react';
-import { ScreenShell } from '../components/ScreenShell';
-import { logo } from '../components/icons';
-import { Route, useNav } from '../lib/navigation';
-import { getSessionUser } from '../lib/session';
+// //수정 '../' → '../../' : 이 파일은 pages/main/ 안(두 층 아래)에 있어서 src 까지 두 번 올라가야 해요
+//  비유: 2층에 있으면서 "한 층 내려가면 1층 로비" 라고 잘못 적어 둔 안내판을 고친 것
+//  ../ = 한 폴더 위로 → '../components' 는 src/pages/components (없는 폴더)
+//                      '../../components' 는 src/components (진짜 폴더)
+import { ScreenShell } from '../../components/ScreenShell';
+import { logo } from '../../components/icons';
+import { Route, useNav } from '../../lib/navigation';
+import { getSessionUser } from '../../lib/session';
 
 /** Mobile 01 First Launch · 여백 로고 → 3초 후(또는 로고를 누르면) Mobile 01B 로 이동 */
 export function SplashScreen({ route }: { route?: Extract<Route, { name: 'splash' }> }) {
