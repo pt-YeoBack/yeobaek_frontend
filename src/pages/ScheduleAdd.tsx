@@ -41,6 +41,7 @@ export function ScheduleAdd({ route }: { route: Extract<Route, { name: 'itinerar
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState(false);
   const [deleting, setDeleting] = useState<Activity | null>(null);
+  const [saving, setSaving] = useState(false);
   const tabsRef = useRef<HTMLDivElement>(null);
 
   // 여행 정보가 없으면 Mobile 09로 돌려보낸다 (새로고침·직접 접근 대비)
@@ -76,9 +77,16 @@ export function ScheduleAdd({ route }: { route: Extract<Route, { name: 'itinerar
 
   const removeActivity = (id: string) => setPlan({ ...plan, activities: plan.activities.filter((x) => x.id !== id) });
 
-  const save = () => {
-    const saved = saveDraft();
-    if (!saved) return;
+  const save = async () => {
+    if (saving) return;
+    setSaving(true);
+    const result = await saveDraft();
+    setSaving(false);
+    if (!result.ok) {
+      showToast(result.message, 'error');
+      return;
+    }
+    const saved = result.trip;
     showToast('일정을 저장했어요. 나의 일정에서 언제든 다시 열어 볼 수 있어요.', 'success');
     // Figma 연결선: Mobile 10 → Mobile 12 (날짜별 일정). 12에서 뒤로 가면 Mobile 11 나의 일정.
     // 12에서 "일정 편집"으로 들어왔다면 그 12 화면으로 돌아간다.
@@ -226,8 +234,8 @@ export function ScheduleAdd({ route }: { route: Extract<Route, { name: 'itinerar
         </span>
       </div>
 
-      <button type="button" className="btn-primary" onClick={save}>
-        일정 저장하고 다음으로
+      <button type="button" className="btn-primary" onClick={save} disabled={saving}>
+        {saving ? '저장하는 중…' : '일정 저장하고 다음으로'}
       </button>
 
       {deleting && (
