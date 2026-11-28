@@ -49,7 +49,7 @@ export function ChatArchive({ route }: { route: Extract<Route, { name: 'archive'
           <br />
           {g.place}
         </p>
-        <small>{memberLine(g, world.profile.privacy.nickname ? world.profile.nickname : '여행자', true)}</small>
+        <small>{memberLine(g, world.profile.nickname, true)}</small>
       </section>
 
       {visible ? (
@@ -60,7 +60,7 @@ export function ChatArchive({ route }: { route: Extract<Route, { name: 'archive'
               <Bubble
                 key={m.id}
                 m={m}
-                me={world.profile.privacy.nickname ? world.profile.nickname : '여행자'}
+                me={world.profile.nickname}
                 onAuthor={(nickname) => push({ name: 'member', nickname })}
               />
             ))}

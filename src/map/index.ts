@@ -1,10 +1,14 @@
-// [지도] //추가 카카오api 넣어야함
-// 지도 모듈 정문: 화면(pages/*)은 이 파일에서만 import 해요.
-// 비유: 건물 안 어느 방에 있든 손님은 안내 데스크 하나만 찾아오면 되는 것.
-
-// core
-export { MapView, type MapViewProps } from './core/MapView';
-export { isInKorea, resolveProvider } from './core/region';
+/**
+ * 지도 모듈 공개 창구 — 화면(pages/*)은 여기서만 import 한다.
+ *
+ *   import { MapView, type Place } from '../map';
+ *
+ * 구성 · 규칙 · 역할 분담은 src/map/README.md 참고
+ */
+export { MapView } from './core/MapView';
+export type { MapViewProps } from './core/MapView';
+export { resolveProvider, providerForCountry, isInKorea } from './core/region';
+export { hasKey, DEFAULT_CENTER, DEFAULT_ZOOM, MAP_COLORS } from './core/config';
 export type {
   LatLng,
   MapHandle,
@@ -13,8 +17,11 @@ export type {
   MapProviderId,
   Place,
   PlaceSearcher,
+  RouteLeg,
+  RouteMode,
   RouteResult,
 } from './core/types';
 
-// 기능 (장소 · 동선)
-export * from './features';
+// 기능 모듈이 생기면 여기에 추가
+// export { RouteMap, useRoute } from './route';        // 팀원 A
+// export { PlacePicker, PlaceSearchBox } from './place'; // 팀원 B

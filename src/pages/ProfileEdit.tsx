@@ -80,7 +80,7 @@ export function ProfileEdit() {
       }
     }
 
-    result = await saveProfileInfo(nickname.trim(), intro.trim());
+    result = await saveProfileInfo({ alias: nickname.trim(), bio: intro.trim() });
     setSaving(false);
     if (!result.ok) {
       showToast(result.message ?? '프로필을 저장하지 못했어요.', 'error');

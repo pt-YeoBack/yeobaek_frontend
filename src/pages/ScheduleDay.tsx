@@ -149,18 +149,6 @@ export function ScheduleDay({ route }: { route: Extract<Route, { name: 'dayPlan'
         </section>
       )}
 
-      <button type="button" className="ai-banner" onClick={goNearby}>
-        <span className="guidance-title">
-          <img src={sparkles} alt="" width={19} height={19} />
-          <strong>여행의 여백을 AI가 채워줘요</strong>
-        </span>
-        <span>
-          {aiPicks.length > 0
-            ? `좋아요한 장소를 AI 추천으로 추가했어요. ${list.filter((a) => a.source !== 'ai').slice(-1)[0]?.time ?? ''} 약속은 유지해요.`
-            : '빈 시간에 들를 만한 근처 장소를 추천받아 보세요.'}
-        </span>
-      </button>
-
       {aiPicks.length > 0 && (
         <section className="accepted-card" aria-labelledby="accepted-title">
           <div className="section-row">

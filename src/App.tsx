@@ -17,10 +17,11 @@ import { GatheringDetail } from './pages/GatheringDetail';
 import { Recommend } from './pages/Recommend';
 import { Notebook } from './pages/Notebook';
 import { ProfileEdit } from './pages/ProfileEdit';
-import { MyPage } from './pages/MyPage';
+import { MyProfile } from './pages/MyProfile';
 import { RecommendResult } from './pages/RecommendResult';
 import { ScheduleList } from './pages/ScheduleList';
-import { UserProfile } from './pages/UserProfile';
+import { MemberProfile } from './pages/MemberProfile';
+import { FriendList } from './pages/FriendList';
 import { Settings } from './pages/Settings';
 import { RecommendList } from './pages/RecommendList';
 import { CheckInbox } from './pages/CheckInbox';
@@ -82,7 +83,7 @@ function CurrentScreen() {
     case 'chat':
       return <GatheringChat key={route.id} route={route} />;
     case 'profile':
-      return <MyPage />;
+      return <MyProfile />;
     case 'notebook':
       return <Notebook key={route.tripId} route={route} />;
     case 'archive':
@@ -91,8 +92,10 @@ function CurrentScreen() {
       return <ProfileEdit />;
     case 'settings':
       return <Settings route={route} />;
+    case 'friends':
+      return <FriendList />;
     case 'member':
-      return <UserProfile route={route} />;
+      return <MemberProfile key={route.memberId ?? route.nickname} route={route} />;
     default:
       return null;
   }

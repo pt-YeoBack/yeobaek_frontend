@@ -2897,6 +2897,13 @@ button.chip {
   text-align: left;
 }
 
+/* 세부 설정: 공개 범위(비공개 · 친구만 · 공개) 고르기 줄 */
+.scope-row {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+}
+
 .switch-row:last-child {
   border-bottom: 0;
 }
@@ -5387,6 +5394,17 @@ button.rail-card:hover {
   color: var(--brand-700);
 }
 
+/* 회원 프로필 상단: 내 프로필(.profile-head)과 같은 정보 창, 연필 버튼 자리에 친구 신청 */
+.member-profile-head .member-friend {
+  margin-top: 22px;
+}
+.member-loading {
+  padding: 24px 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--brand-600);
+}
+
 .member-taste {
   display: flex;
   flex-direction: column;
@@ -5426,122 +5444,22 @@ button.rail-card:hover {
   color: var(--brand-600);
 }
 
-.member-posts {
-  display: flex;
-  flex-direction: column;
-  margin-top: 22px;
-}
-.member-posts-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 23px;
-  font-weight: 700;
-  line-height: 28px;
-  color: var(--brand-700);
-}
-.member-posts-lead {
-  margin-top: 16px;
-  font-size: 13px;
-  line-height: 16px;
-  color: var(--brand-600);
-}
-.member-post-group {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  margin-top: 15px;
-}
-.member-post-group + .member-post-group {
-  margin-top: 22px;
-  gap: 14px;
-}
-.member-post-group h3 {
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 18px;
-  color: var(--brand-600);
-}
-.member-post-group ul {
+/* 회원 프로필 모집글: 내 프로필 수첩(.notebook-*)과 같은 카드 · 빈 칸(.empty-day) */
+.member-notes {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  list-style: none;
+  margin-top: 26px;
 }
-.member-post {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  padding: 15px 15px 17px;
-  border: 1px solid var(--brand-300);
-  border-radius: 16px;
-  background: #ffffff;
-  text-align: left;
-  font: inherit;
+/* 사진 없는 모집글: 수첩의 여행지 자리와 같은 그라데이션 */
+.member-notes .destination-placeholder {
+  background: linear-gradient(135deg, var(--sky-200), var(--brand-700));
 }
-button.member-post {
-  cursor: pointer;
-}
-button.member-post:hover {
-  border-color: var(--brand-700);
-}
-.member-post.is-closed {
+.member-notes .notebook-card.is-closed {
   opacity: 0.6;
 }
-.member-post-photo {
-  width: 100%;
-  height: 120px;
-  border-radius: 10px;
-  object-fit: cover;
-  background: var(--mist-100);
-}
-.member-post-photo.is-empty {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  color: var(--brand-600);
-}
-.member-post-tags {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 10px;
-}
-.member-status {
-  height: 28px;
-  display: inline-flex;
-  align-items: center;
-  padding: 0 11px;
-  border-radius: 100px;
-  background: var(--mist-100);
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--brand-700);
-}
-.member-status.is-open {
-  background: var(--select, var(--brand-700));
-  color: #ffffff;
-}
-.member-post-tags small {
-  font-size: 11px;
-  color: var(--brand-600);
-}
-.member-post-title {
-  margin-top: 13px;
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 22px;
-  color: var(--brand-700);
-}
-.member-post-meta {
-  margin-top: 8px;
-  font-size: 12px;
-  line-height: 14px;
-  color: var(--brand-600);
-}
-.member-posts > .footnote {
-  margin-top: 16px;
+.member-notes > .footnote {
+  margin-top: 4px;
 }
 
 /* ---------------------------------------------------------------------------
@@ -5743,6 +5661,67 @@ button.member-post:hover {
   flex-shrink: 0;
 }
 
+
+/* AI 추천 진입 영역 - 중립 그레이 스타일 */
+.nearby-ai-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  border: 1px solid #d5d7dc;
+  border-radius: 20px;
+  background: #eceef1;
+}
+
+.nearby-ai-entry-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nearby-ai-entry-icon {
+  color: #555b65;
+  font-size: 26px;
+  line-height: 1;
+}
+
+.nearby-ai-entry-heading h2 {
+  margin: 0;
+  color: #34383f;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.nearby-ai-entry-description {
+  margin: 0;
+  color: #666b75;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.nearby-ai-entry-button {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 12px;
+  background: #555b65;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.nearby-ai-entry-button:hover {
+  background: #424751;
+}
+
+.nearby-ai-entry-button:focus-visible {
+  outline: 2px solid #424751;
+  outline-offset: 3px;
+}
+
+
 .btn-logout:hover {
   background: var(--danger-bg);
 }
@@ -5755,3 +5734,845 @@ button.member-post:hover {
   color: var(--danger);
   font-size: 13px;
 }
+
+/* ---------------------------------------------------------------------------
+   지도 모듈 (src/map) — MapView · 공통 마커
+   --------------------------------------------------------------------------- */
+.map-view {
+  position: relative;
+  width: 100%;
+  height: 320px; /* 화면에서 className / style 로 바꾼다 */
+  overflow: hidden;
+  border-radius: 16px;
+  background: #eef2f7;
+}
+
+.map-view-canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.map-view-status {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--ink-500);
+  background: #eef2f7;
+}
+
+.map-view-status.is-error,
+.map-view-status.is-no-key {
+  color: var(--danger);
+}
+
+.map-marker {
+  --marker-color: var(--brand-700);
+  display: block;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: default;
+  transform: translateY(0);
+}
+
+button.map-marker {
+  cursor: pointer;
+}
+
+.map-marker-dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  background: var(--marker-color);
+  box-shadow: 0 1px 4px rgba(17, 24, 39, 0.35);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.map-marker.has-label .map-marker-dot {
+  width: 26px;
+  height: 26px;
+}
+
+.map-marker.is-selected .map-marker-dot {
+  border-width: 3px;
+  transform: scale(1.15);
+  box-shadow: 0 0 0 4px rgba(36, 71, 144, 0.25), 0 2px 6px rgba(17, 24, 39, 0.35);
+}
+
+/* ---------------------------------------------------------------------------
+   친구 (알림 시트 · 친구 목록 · 회원 프로필 버튼)
+   --------------------------------------------------------------------------- */
+.bell-button {
+  position: relative;
+}
+.bell-badge {
+  position: absolute;
+  top: 4px;
+  right: 2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 100px;
+  background: #e5484d;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+}
+.friends-content {
+  gap: 24px;
+}
+.friend-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.friend-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--brand-300);
+  border-radius: 16px;
+  background: #ffffff;
+}
+.friend-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+}
+.friend-row + .friend-row {
+  border-top: 1px solid var(--brand-300);
+}
+.friend-who {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+}
+.friend-who > span {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.friend-who strong {
+  font-size: 14px;
+  color: var(--brand-700);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.friend-who small {
+  font-size: 11px;
+  color: var(--brand-600);
+}
+.friend-actions {
+  flex-shrink: 0;
+  display: flex;
+  gap: 6px;
+}
+.friend-action {
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid var(--brand-700);
+  border-radius: 100px;
+  background: #ffffff;
+  color: var(--brand-700);
+  font-size: 12px;
+  font-weight: 700;
+}
+.friend-action.is-primary {
+  background: var(--brand-700);
+  color: #ffffff;
+}
+.friend-action:disabled,
+.member-friend:disabled {
+  opacity: 0.5;
+}
+
+.friend-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 100px;
+  background: var(--mist-100);
+  color: var(--brand-700);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* =====================================================
+   Mobile 13 - Full Map + Bottom Sheet
+   다른 화면에는 적용되지 않는 전용 스타일
+   ===================================================== */
+
+/* 화면 자체를 뷰포트 높이에 맞춤 */
+.screen[data-frame='Mobile 13 AI Nearby Recommendations'] {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* 기존 screen-content 여백 제거 */
+.screen[data-frame='Mobile 13 AI Nearby Recommendations']
+.nearby-content {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  gap: 0;
+  overflow: hidden;
+}
+
+/* 지도를 포함하는 전체 영역 */
+.recommend-layout {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* 지도 영역을 부모 높이 전체로 확장 */
+.recommend-map-area {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--map-bg, #f4f1f8);
+}
+
+/* 기존 MiniMap의 전체 높이 확장 */
+.recommend-map-area .mini-map-wrap {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+/* MiniMap 내부 고정 높이 재설정 */
+.recommend-map-area .mini-map {
+  width: 100%;
+  height: 100% !important;
+  min-height: 0;
+  border-radius: 0;
+}
+
+/* 지도 상단 여행 정보 */
+.recommend-map-heading {
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  z-index: 3;
+  max-width: calc(100% - 90px);
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  pointer-events: none;
+}
+
+.recommend-map-heading .nearby-place-title {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.recommend-map-heading .nearby-place-sub {
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+/* 지도 안내 문구 */
+.recommend-map-area .map-caption {
+  position: absolute;
+  right: 16px;
+  bottom: 200px;
+  z-index: 2;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.85);
+}
+
+/* =====================================================
+   Bottom Sheet
+   ===================================================== */
+
+.recommend-bottom-sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 4;
+
+  height: 190px;
+  max-height: 85%;
+
+  display: flex;
+  flex-direction: column;
+
+  border-radius: 26px 26px 0 0;
+  border: 1px solid #d5d7dc;
+  border-bottom: 0;
+
+  background: #eceef1;
+
+  box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.08);
+
+  overflow: hidden;
+  transition: height 0.28s ease;
+}
+
+/* 펼친 상태 */
+.recommend-bottom-sheet.is-expanded {
+  height: 76%;
+}
+
+/* 클릭/드래그 손잡이 */
+.recommend-sheet-handle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  width: 100%;
+  min-height: 62px;
+  padding: 12px 16px;
+
+  border: 0;
+  background: transparent;
+
+  cursor: grab;
+  touch-action: none;
+  flex-shrink: 0;
+}
+
+.recommend-sheet-handle:active {
+  cursor: grabbing;
+}
+
+.recommend-sheet-bar {
+  display: block;
+  width: 42px;
+  height: 5px;
+  border-radius: 999px;
+  background: #a3a7b0;
+}
+
+.recommend-sheet-hint {
+  color: #555b65;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* 패널 내부에서만 스크롤 */
+.recommend-sheet-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  flex: 1;
+  min-height: 0;
+
+  padding: 4px 16px 24px;
+
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 패널 안 일정 카드 */
+.recommend-sheet-body .preview-card {
+  flex-shrink: 0;
+  background: #ffffff;
+}
+
+/* 패널 안 AI 위젯 */
+.recommend-sheet-body .nearby-ai-entry {
+  flex-shrink: 0;
+}
+
+/* 데스크톱 미리보기 프레임 */
+@media (min-width: 481px) {
+  .screen[data-frame='Mobile 13 AI Nearby Recommendations'] {
+    height: 874px;
+    min-height: 0;
+  }
+}
+
+
+/* ==================================================
+   Mobile 13 - 여행 일정 확인
+   인연(MapPage) 화면과 동일한 지도 + 하단 패널
+   ================================================== */
+
+/* 해당 화면만 높이를 고정 */
+.screen[data-frame='Mobile 13 AI Nearby Recommendations'] {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* 기본 콘텐츠 여백 제거 */
+.screen[data-frame='Mobile 13 AI Nearby Recommendations']
+.nearby-content {
+  flex: 1;
+  min-height: 0;
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* 인연 화면의 conn-stage와 같은 지도 영역 */
+.recommend-stage {
+  --recommend-peek: 160px;
+
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* 기존 MiniMap full 스타일 재사용 */
+.recommend-stage .mini-map-wrap.is-full {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.recommend-stage .mini-map-wrap.is-full .mini-map {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+}
+
+/* 지도 위 여행 날짜 */
+.recommend-location {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 3;
+
+  max-width: calc(100% - 90px);
+  padding: 12px 14px;
+
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+
+  pointer-events: none;
+}
+
+.recommend-location .nearby-place-title {
+  font-size: 15px;
+}
+
+.recommend-location .nearby-place-sub {
+  margin-top: 3px;
+  font-size: 12px;
+}
+
+/* 하단 패널이 지도 위에 떠 있는 구조 */
+.recommend-panel {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  z-index: 4;
+
+  height: var(--recommend-peek);
+  max-height: calc(100% - 20px);
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 4px 8px 8px;
+
+  border-radius: 22px;
+  border: 1px solid #d5d7dc;
+  background: #eceef1;
+
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.10);
+
+  overflow: hidden;
+  transition: height 0.25s ease;
+}
+
+
+/* 펼친 상태: 콘텐츠 높이에 맞게 조절 */
+.recommend-stage.is-expanded .recommend-panel {
+  height: auto;
+  max-height: calc(100% - 64px);
+}
+
+/* 일정이 많아지면 내부에서 스크롤 */
+.recommend-stage.is-expanded .recommend-panel-scroll {
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* 인연 화면과 같은 손잡이 */
+.recommend-panel-grip-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+
+  width: 100%;
+  padding: 8px 0 10px;
+
+  border: 0;
+  background: transparent;
+
+  touch-action: none;
+  cursor: grab;
+  flex-shrink: 0;
+}
+
+.recommend-panel-grip-button:active {
+  cursor: grabbing;
+}
+
+.recommend-panel-grip {
+  width: 42px;
+  height: 5px;
+  border-radius: 999px;
+  background: #a4a8b2;
+}
+
+.recommend-panel-count {
+  font-size: 12px;
+  font-weight: 700;
+  color: #555b65;
+}
+
+/* 패널 안에서만 세로 스크롤 */
+.recommend-panel-scroll {
+  flex: 1;
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  padding: 4px 8px 16px;
+
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 일정 미리보기 디자인 유지 */
+.recommend-panel-scroll .preview-card {
+  flex-shrink: 0;
+  background: #ffffff;
+}
+
+/* AI 위젯 - 기존 그레이 스타일 유지 */
+.recommend-panel-scroll .nearby-ai-entry {
+  flex-shrink: 0;
+}
+
+/* 지도 확대/축소 버튼이 패널에 가리지 않도록 */
+.recommend-stage .map-zoom {
+  bottom: calc(var(--recommend-peek) + 24px);
+}
+
+.recommend-stage.is-expanded .map-zoom {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 데스크톱 Figma 미리보기 */
+@media (min-width: 481px) {
+  .screen[data-frame='Mobile 13 AI Nearby Recommendations'] {
+    height: 874px;
+    min-height: 0;
+  }
+}
+
+/* 작은 모바일 화면 */
+@media (max-width: 480px) {
+  .recommend-stage {
+    --recommend-peek: 160px;
+  }
+}
+
+/* 움직임 최소화 설정 */
+@media (prefers-reduced-motion: reduce) {
+  .recommend-panel {
+    transition: none;
+  }
+}
+
+/* 접힌 상태: 그레이 */
+.recommend-stage .recommend-panel {
+  background: #eceef1;
+  transition:
+    height 0.25s ease,
+    background-color 0.25s ease;
+}
+
+/* 펼친 상태: 사용자 테마 색상 적용 */
+.recommend-stage.is-expanded .recommend-panel {
+  background: color-mix(
+    in srgb,
+    var(--select, var(--brand-700)) 18%,
+    white
+  );
+}
+
+/* 여행 일정 확인 - 접힌 패널 */
+.screen[data-frame='Mobile 13 AI Nearby Recommendations']
+.recommend-stage:not(.is-expanded) .recommend-panel {
+  background-color: #eceef1;
+}
+
+/* 여행 일정 확인 - 펼친 패널 */
+.screen[data-frame='Mobile 13 AI Nearby Recommendations']
+.recommend-stage.is-expanded .recommend-panel {
+  background-color: color-mix(
+    in srgb,
+    var(--select) 45%,
+    white
+  );
+}
+
+
+/* ============================================
+   Mobile 16 - 인연 페이지 테마 연동
+   ============================================ */
+
+/* 접힌 상태: 그레이 배경 */
+.screen[data-frame='Mobile 16 Connections']
+.conn-stage:not(.is-expanded) .gathering-panel {
+  background-color: #eceef1;
+}
+
+/* 펼친 상태: 사용자 테마 색상 45% 적용 */
+.screen[data-frame='Mobile 16 Connections']
+.conn-stage.is-expanded .gathering-panel {
+  background-color: color-mix(
+    in srgb,
+    var(--select, var(--brand-700)) 45%,
+    white
+  );
+}
+
+/* 모임 카드는 흰색으로 유지 */
+.screen[data-frame='Mobile 16 Connections']
+.gathering-panel .gathering-card {
+  background-color: #ffffff;
+}
+
+/* 배경색이 자연스럽게 전환되도록 */
+.screen[data-frame='Mobile 16 Connections']
+.conn-stage .gathering-panel {
+  transition:
+    height 0.25s ease,
+    background-color 0.25s ease;
+}
+
+
+/* ============================================
+   오늘 일정 미리보기 - 펼침/접힘 카드
+   ============================================ */
+
+.recommend-preview {
+  overflow: hidden;
+}
+
+/* 카드 전체를 누를 수 있는 버튼 영역 */
+.recommend-preview-toggle {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  width: 100%;
+  padding: 0;
+
+  border: none;
+  background: transparent;
+
+  text-align: left;
+  cursor: pointer;
+}
+
+/* 제목과 화살표 */
+.recommend-preview-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.recommend-preview-heading strong {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--brand-700);
+}
+
+/* 미리보기 카드 클릭 시 자연스러운 반응 */
+.recommend-preview-toggle {
+  cursor: pointer;
+}
+
+.recommend-preview-toggle:active {
+  opacity: 0.75;
+}
+
+/* 펼친 상태에서 제목 강조 */
+.recommend-preview.is-open .recommend-preview-heading strong {
+  color: var(--brand-700);
+}
+
+/* 기본 요약 */
+.recommend-preview-summary,
+.recommend-preview-first {
+  display: block;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--brand-600);
+}
+
+.recommend-preview-first {
+  font-weight: 600;
+}
+
+/* 펼쳐지는 일정 상세 영역 */
+.recommend-preview-details {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--ink-200);
+}
+
+.recommend-preview-details ol {
+  margin: 0;
+}
+
+/* 일정이 없을 때 안내 */
+.recommend-preview-empty {
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--ink-600);
+}
+
+/* 접근성: 키보드 포커스 */
+.recommend-preview-toggle:focus-visible {
+  outline: 2px solid var(--brand-700);
+  outline-offset: 4px;
+  border-radius: 6px;
+}
+
+
+/* 여행 일정 확인 - 날짜 선택 위젯 */
+.recommend-date-picker {
+  pointer-events: auto;
+  overflow: visible;
+  z-index: 10;
+}
+
+.recommend-date-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--brand-700);
+  text-align: left;
+  cursor: pointer;
+}
+
+.recommend-date-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.recommend-date-info strong {
+  font-size: 15px;
+}
+
+.recommend-date-info small {
+  font-size: 12px;
+  color: var(--brand-600);
+}
+
+.recommend-date-options {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 230px;
+  max-height: 250px;
+  overflow-y: auto;
+  padding: 6px;
+  border: 1px solid var(--brand-300);
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.recommend-date-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--brand-700);
+  font-size: 13px;
+  text-align: left;
+}
+
+.recommend-date-option:hover,
+.recommend-date-option.is-selected {
+  background: color-mix(
+    in srgb,
+    var(--select, var(--brand-700)) 15%,
+    white
+  );
+}
+
+/* 날짜 선택 드롭다운 화살표 */
+.recommend-date-arrow {
+  font-size: 9px;
+  line-height: 1;
+  color: var(--brand-700);
+  flex-shrink: 0;
+  margin-left: 4px;
+}
+
+
+

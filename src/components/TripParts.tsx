@@ -1,5 +1,7 @@
-import { ReactNode, useEffect, useId, useRef } from 'react';
-import { useAppState } from '../lib/appState';
+import { ReactNode, useCallback, useEffect, useId, useRef, useState } from 'react';
+import { fetchFriendRequestCount } from '../api/friends';
+import { getSessionUser } from '../lib/session';
+import { FriendRequestSheet, useFriendsChanged } from './FriendParts';
 import { Route, useNav } from '../lib/navigation';
 import { bell, calendarDays, clover, house, userRound } from './icons';
 
@@ -51,17 +53,41 @@ export function BottomNav({ active }: { active: TabKey }) {
   );
 }
 
+/**
+ * 상단 알림(종) 버튼 — 받은 친구 신청 수를 점으로 보여 주고, 누르면 받은 신청 시트를 연다
+ * 로그인 전이면 요청하지 않는다.
+ */
 export function BellButton() {
-  const { showToast } = useAppState();
+  const [count, setCount] = useState(0);
+  const [open, setOpen] = useState(false);
+  const loggedIn = Boolean(getSessionUser());
+
+  const load = useCallback(async () => {
+    if (loggedIn) setCount(await fetchFriendRequestCount());
+  }, [loggedIn]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+  useFriendsChanged(load);
+
   return (
-    <button
-      type="button"
-      className="nav-more"
-      aria-label="알림"
-      onClick={() => showToast('새 알림이 없어요. (알림 기능은 준비 중이에요)')}
-    >
-      <img src={bell} alt="" width={21} height={21} />
-    </button>
+    <>
+      <button
+        type="button"
+        className="nav-more bell-button"
+        aria-label={count > 0 ? `알림 · 받은 친구 신청 ${count}개` : '알림'}
+        onClick={() => setOpen(true)}
+      >
+        <img src={bell} alt="" width={21} height={21} />
+        {count > 0 && (
+          <span className="bell-badge" aria-hidden="true">
+            {count > 9 ? '9+' : count}
+          </span>
+        )}
+      </button>
+      {open && <FriendRequestSheet onClose={() => setOpen(false)} />}
+    </>
   );
 }
 

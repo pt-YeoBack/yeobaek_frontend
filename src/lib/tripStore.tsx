@@ -1,11 +1,15 @@
 /**
  * 여행 데이터 저장소
  * - 저장된 여행 · 작성 중인 여행(초안) 모두 메모리에만 보관 (새로고침하면 사라짐)
- * - localStorage 저장은 제거했다. 백엔드 여행 API 가 생기면 이 Provider 에서 불러오고 저장하면 된다.
+ * - localStorage 저장은 제거했다.
+ * - 새 여행을 saveDraft() 로 저장하면 서버(POST /api/trip/create)에도 한 번에 저장하고, 응답의 id 를 serverId 로 보관한다.
+ *   아직 연결하지 않은 것: 서버에서 목록 불러오기, 저장된 여행 수정(update) · 삭제 — 이 둘은 지금처럼 화면(메모리)에만 반영된다.
  */
 import { createContext, ReactNode, useCallback, useContext, useMemo, useState } from 'react';
 import { dateRange, ISODate } from './dates';
 import type { Destination, Region } from './destinations';
+import { createTrip, MissingIdError, tripToCreateRequest } from '../api/trips';
+import type { TripDTO } from '../api/trips';
 
 export interface Companion {
   id: string;
@@ -24,6 +28,8 @@ export interface Activity {
   placeId?: string;
   /** 다음 일정까지의 이동 메모 (Mobile 12 카드 아래 작은 글씨) */
   note?: string;
+  /** 서버에 저장된 일정 id (schedules[].id) */
+  serverId?: number;
 }
 
 export interface DayPlan {
@@ -33,6 +39,8 @@ export interface DayPlan {
   diary?: string;
   /** Mobile 21 방문 기록 체크한 활동 id */
   visited?: string[];
+  /** 서버에 저장된 일차 id (days[].id) */
+  serverId?: number;
 }
 
 export interface Trip {
@@ -49,7 +57,12 @@ export interface Trip {
   createdAt: number;
   updatedAt: number;
   savedAt?: number;
+  /** 서버에 저장된 여행 id (trip.id). 없으면 아직 서버에 저장하지 않은 여행 */
+  serverId?: number;
 }
+
+/** 저장 결과 — 실패하면 화면에 보여 줄 메시지를 담는다 */
+export type SaveResult = { ok: true; trip: Trip } | { ok: false; message: string };
 
 export function newId(prefix = 'id'): string {
   return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
@@ -100,6 +113,25 @@ export function activitiesOutsideRange(trip: Trip, start: ISODate, end: ISODate)
     .reduce((n, [, plan]) => n + plan.activities.length, 0);
 }
 
+/**
+ * create 응답의 id 를 상태에 붙인다. 서버가 요청 순서를 그대로 돌려주므로
+ * days[i].schedules[j] 는 요청의 같은 위치(날짜 i · 일정 j)와 대응한다 → 인덱스로 맞춘다.
+ */
+function applyServerIds(trip: Trip, dates: ISODate[], server: TripDTO): Trip {
+  const days = { ...trip.days };
+  dates.forEach((date, i) => {
+    const serverDay = server.days?.[i];
+    if (!serverDay || serverDay.tripDay !== date) return;
+    const plan = trip.days[date] ?? { title: '', activities: [] };
+    days[date] = {
+      ...plan,
+      serverId: serverDay.id,
+      activities: plan.activities.map((a, j) => ({ ...a, serverId: serverDay.schedules?.[j]?.id })),
+    };
+  });
+  return { ...trip, days, serverId: server.id };
+}
+
 interface TripApi {
   trips: Trip[];
   draft: Trip | null;
@@ -109,8 +141,8 @@ interface TripApi {
   editTrip: (id: string) => Trip | null;
   updateDraft: (patch: Partial<Trip> | ((t: Trip) => Trip)) => void;
   discardDraft: () => void;
-  /** 초안을 저장 목록에 반영 (기간 밖 날짜의 일정은 정리) */
-  saveDraft: () => Trip | null;
+  /** 초안을 저장 목록에 반영 (기간 밖 날짜의 일정은 정리). 새 여행이면 서버에도 저장한다 */
+  saveDraft: () => Promise<SaveResult>;
   deleteTrip: (id: string) => void;
   isSaved: (id: string) => boolean;
   /** 저장된 여행을 바로 고친다 (Mobile 12~15 추천 추가, Mobile 21 기록). 같은 여행을 편집 중이면 초안에도 반영 */
@@ -157,21 +189,42 @@ export function TripProvider({ children }: { owner: string | null; children: Rea
 
   const discardDraft = useCallback(() => setDraft(null), []);
 
-  const saveDraft = useCallback(() => {
-    if (!draft || !draft.startDate || !draft.endDate) return null;
+  const saveDraft = useCallback(async (): Promise<SaveResult> => {
+    if (!draft || !draft.startDate || !draft.endDate) {
+      return { ok: false, message: '여행 날짜를 먼저 선택해 주세요.' };
+    }
     const { startDate, endDate } = draft;
     const days: Record<ISODate, DayPlan> = {};
     Object.entries(draft.days).forEach(([date, plan]) => {
       if (date >= startDate && date <= endDate) days[date] = plan;
     });
     const now = Date.now();
-    const saved: Trip = { ...draft, days, savedAt: now, updatedAt: now };
+    let saved: Trip = { ...draft, days, savedAt: now, updatedAt: now };
+
+    // 서버에 아직 없는 새 여행만 create 로 보낸다. 이미 서버에 저장된 여행(serverId 있음)의 수정은
+    // 아직 서버에 반영하지 않고 화면(메모리)에만 저장한다 (update 연결은 다음 단계)
+    if (saved.serverId === undefined) {
+      const dates = tripDates(saved);
+      let request;
+      try {
+        request = tripToCreateRequest(saved, dates, tripTitle(saved));
+      } catch (e) {
+        if (e instanceof MissingIdError) return { ok: false, message: e.message };
+        throw e;
+      }
+      const result = await createTrip(request);
+      if (!result.ok) {
+        return { ok: false, message: result.message ?? '여행을 저장하지 못했어요. 잠시 후 다시 시도해 주세요.' };
+      }
+      saved = applyServerIds(saved, dates, result.trip);
+    }
+
     setTrips((list) => {
       const exists = list.some((t) => t.id === saved.id);
       return exists ? list.map((t) => (t.id === saved.id ? saved : t)) : [saved, ...list];
     });
     setDraft(saved);
-    return saved;
+    return { ok: true, trip: saved };
   }, [draft]);
 
   const deleteTrip = useCallback((id: string) => {

@@ -6,6 +6,7 @@
  * ⚠️ 서버가 없어서 다른 여행자는 실제 사람이 아닌 Figma에 그려진 예시 참여자입니다.
  *    모임 참여·대화도 이 브라우저 안에서만 기록되고, 다른 사람에게 전달되지 않습니다.
  */
+import type { Visibility } from '../components/ProfileInfo';
 import { createContext, ReactNode, useCallback, useContext, useMemo, useState } from 'react';
 import { addDays, ISODate } from './dates';
 import { DEFAULT_PREFS, NearbyPrefs } from './nearby';
@@ -22,7 +23,11 @@ export interface Profile {
   avatar: string;
   tastes: string[];
   keywords: string[];
-  privacy: { nickname: boolean; contact: boolean; autosave: boolean };
+  /** 실명 · 연락처 (서버 값, 공개 여부와 상관없이 본인 것) */
+  realName?: string;
+  phone?: string;
+  /** name: 실명 공개 범위 · contact: 연락처 공개 범위 · autosave: 수첩 대화 자동 저장 */
+  privacy: { name: Visibility; contact: Visibility; autosave: boolean };
   /** Mobile 22 컬러 조합 선택: 팔레트 id(lib/accent.ts) 또는 직접 고른 #rrggbb */
   accent?: string;
 }
@@ -52,7 +57,6 @@ export interface Gathering {
   maxPeople: number;
   members: Member[];
   photo?: string; // 'sushi' | 'asakusa' | data URL
-  photos?: string[]; // //추가 서버 모임 사진 주소 전부 (/api/files/번호) → 상세 화면 사진 줄 · api/together.ts toGathering 이 채움
   /** Figma에 그려진 예시 모임이면 true */
   sample?: boolean;
   /** 내가 만든 모임이면 true (내가 모임장) */
@@ -60,18 +64,6 @@ export interface Gathering {
   /** 지도 위 위치 (0~100 %) */
   x: number;
   y: number;
-
-  // //추가 서버(DB)에 저장된 모임일 때만 채워지는 칸들 (예시 · 데모 모임은 비어 있음)
-  //  ? 는 "없어도 되는 칸" 이라는 뜻이에요. 그래서 기존 예시 모임 코드는 고칠 필요가 없어요.
-  /** //추가 서버 모임이면 true. 이때 id 는 'srv-<번호>' (api/together.ts 의 SERVER_PREFIX) */
-  server?: boolean;
-  /** //추가 서버 모임 번호 (tbl_get_together.id). 서버에 요청 보낼 때 이 번호를 써요 */
-  serverId?: number;
-  placeId?: number | null; // [지도] //수정 주석 해제 : 지도에 핀을 찍을 장소 번호 (tbl_place.id) → 없으면 장소 이름만 있는 모임
-  /** //추가 서버가 세어 준 지금 인원 (모임장 포함). 화면의 "4 / 6명" 의 4 */
-  count?: number;
-  /** //추가 서버 모집 상태: open(모집 중) · close(마감) · ended(끝남) */
-  status?: 'open' | 'close' | 'ended';
 }
 
 export interface ChatMessage {
@@ -90,20 +82,12 @@ interface WorldData {
   /** "2개 더 보기"를 누른 여행·날짜 */
   expanded: Record<string, boolean>;
   createdGatherings: Gathering[];
-  /**
-   * //추가 서버에서 받아 온 모임들
-   *  비유: 서버(DB)가 "원본 장부"라면, 이건 화면에 보여 주려고 잠깐 베껴 둔 "메모"예요.
-   *  새로고침하면 사라지지만, 화면에 들어올 때마다 서버에서 다시 받아 와요.
-   */
-  serverGatherings: Gathering[];
   joined: string[];
   chats: Record<string, ChatMessage[]>;
   /** 대화 기록을 직접 지운 모임 */
   archiveDeleted: string[];
   /** Mobile 16 ✦ 버튼 — 여백 도우미(챗봇 데모) 대화 기록 */
   assistantLog: AssistantMessage[];
-  /** Mobile 20-1 친구 신청(테스트) — 이 기기에만 기록, 상대에게 전달되지 않음 */
-  friendRequests: string[];
 }
 
 export interface AssistantAction {
@@ -259,19 +243,17 @@ function defaultWorld(): WorldData {
       avatar: 'initial',
       tastes: [],
       keywords: [],
-      privacy: { nickname: true, contact: true, autosave: true },
+      privacy: { name: 'private', contact: 'private', autosave: true },
       accent: 'sky',
     },
     prefs: DEFAULT_PREFS,
     dismissed: {},
     expanded: {},
     createdGatherings: [],
-    serverGatherings: [], // //추가 처음에는 비어 있음 (인연 화면에 들어가면 서버에서 채움)
     joined: [],
     chats: {},
     archiveDeleted: [],
     assistantLog: [],
-    friendRequests: [],
   };
 }
 
@@ -294,15 +276,10 @@ interface WorldApi extends WorldData {
   join: (id: string) => void;
   leave: (id: string) => void;
   createGathering: (g: Omit<Gathering, 'id' | 'members' | 'mine' | 'x' | 'y'>) => Gathering;
-  /** //추가 서버 모임 목록을 통째로 바꿔 넣기 (인연 화면에 들어올 때) */
-  putServerGatherings: (list: Gathering[], joinedIds?: string[]) => void; // //수정 joinedIds 추가 → 목록에서 받은 "참여 중" 을 저장소에 반영
-  /** //추가 서버 모임 하나를 넣거나 바꾸고, 내가 참여 중인지(joined)도 서버 값으로 맞추기 (상세 화면) */
-  putServerGathering: (g: Gathering, joined: boolean) => void;
   sendMessage: (id: string, text: string) => void;
   deleteArchive: (id: string) => void;
   addAssistant: (msgs: AssistantMessage[]) => void;
   clearAssistant: () => void;
-  toggleFriendRequest: (nickname: string) => boolean;
 }
 
 const WorldContext = createContext<WorldApi | null>(null);
@@ -319,24 +296,15 @@ export function WorldProvider({
   // owner 가 바뀌면 App 에서 key={owner} 로 새로 마운트되어 빈 데이터로 시작한다
   const [data, setData] = useState<WorldData>(defaultWorld);
 
-  // //수정 서버 모임을 맨 앞에 붙임 → 목록 = 서버 모임 + 내가 만든 데모 모임 + 예시 모임
-  //  useMemo: 재료(의존성 배열)가 바뀔 때만 다시 계산하고, 아니면 전에 만든 목록을 재사용해요
   const gatherings = useMemo(
-    () => [...data.serverGatherings, ...data.createdGatherings, ...sampleGatherings(baseDate)],
-    [data.serverGatherings, data.createdGatherings, baseDate],
+    () => [...data.createdGatherings, ...sampleGatherings(baseDate)],
+    [data.createdGatherings, baseDate],
   );
 
   const getGathering = useCallback((id: string) => gatherings.find((g) => g.id === id), [gatherings]);
   const isJoined = useCallback((id: string) => data.joined.includes(id), [data.joined]);
-  // //수정 인원 수 계산
-  //  - 서버 모임: 서버가 세어 준 숫자(count)를 그대로 써요. 화면이 직접 세지 않아요.
-  //    (비유: 출석부 원본은 서버에 있고, 화면은 "몇 명이에요?" 라고 물어본 답을 그대로 읽어요)
-  //  - 예시 · 데모 모임: 원래 하던 대로 "예시 참여자 수 + 나" 로 계산
   const memberCount = useCallback(
-    (g: Gathering) =>
-      g.server
-        ? g.count ?? 0
-        : g.members.length + (data.joined.includes(g.id) && !g.mine ? 1 : 0) + (g.mine ? 1 : 0),
+    (g: Gathering) => g.members.length + (data.joined.includes(g.id) && !g.mine ? 1 : 0) + (g.mine ? 1 : 0),
     [data.joined],
   );
   const messagesOf = useCallback(
@@ -384,38 +352,6 @@ export function WorldProvider({
     setData((d) => ({ ...d, createdGatherings: [created, ...d.createdGatherings], joined: [...d.joined, created.id] }));
     return created;
   }, []);
-
-  // //추가 서버 모임 목록을 통째로 바꿔 넣기
-  //  setData((d) => ({ ...d, 바꿀칸: 새값 })) 모양은 "기존 데이터(d)를 그대로 복사(...d)하고 한 칸만 바꾼다" 는 뜻이에요.
-  //  React 는 값이 '새 객체'로 바뀌어야 화면을 다시 그려서, 원본을 직접 고치지 않고 복사본을 만들어요.
-  const putServerGatherings = useCallback(
-    (list: Gathering[], joinedIds?: string[]) => // //수정 joinedIds = 서버가 "참여 중" 이라고 알려 준 모임 id ('srv-3' 모양)
-      setData((d) => ({
-        ...d,
-        serverGatherings: list,
-        joined: joinedIds // //추가 받았으면 서버 모임('srv-')의 참여 여부만 서버 값으로 바꿔 끼움 → 예시 모임 참여 기록은 그대로
-          ? [...d.joined.filter((x) => !x.startsWith('srv-')), ...joinedIds]
-          : d.joined,
-      })),
-    [],
-  );
-
-  // //추가 서버 모임 하나를 넣거나 바꾸기 + 내가 참여 중인지 맞추기
-  //  - 이미 있는 모임(같은 id)이면 새 정보로 바꿔 끼우고, 없으면 맨 앞에 넣어요
-  //  - joined 가 true 면 내 참여 목록에 id 를 넣고, false 면 빼요
-  //    (new Set: 같은 값이 두 번 들어가지 않게 중복을 없애 주는 상자)
-  const putServerGathering = useCallback(
-    (g: Gathering, joined: boolean) =>
-      setData((d) => {
-        const exists = d.serverGatherings.some((x) => x.id === g.id);
-        return {
-          ...d,
-          serverGatherings: exists ? d.serverGatherings.map((x) => (x.id === g.id ? g : x)) : [g, ...d.serverGatherings],
-          joined: joined ? [...new Set([...d.joined, g.id])] : d.joined.filter((x) => x !== g.id),
-        };
-      }),
-    [],
-  );
   const sendMessage = useCallback((id: string, text: string) => {
     const now = new Date();
     const msg: ChatMessage = {
@@ -440,18 +376,6 @@ export function WorldProvider({
     [],
   );
   const clearAssistant = useCallback(() => setData((d) => ({ ...d, assistantLog: [] })), []);
-  /** 신청 상태를 바꾸고, 바뀐 뒤 신청 중이면 true */
-  const toggleFriendRequest = useCallback(
-    (nickname: string) => {
-      const on = !data.friendRequests.includes(nickname);
-      setData((d) => ({
-        ...d,
-        friendRequests: on ? [...new Set([...d.friendRequests, nickname])] : d.friendRequests.filter((n) => n !== nickname),
-      }));
-      return on;
-    },
-    [data.friendRequests],
-  );
 
   const value = useMemo<WorldApi>(
     () => ({
@@ -469,16 +393,12 @@ export function WorldProvider({
       join,
       leave,
       createGathering,
-      putServerGatherings, // //추가 화면에서 useWorld() 로 꺼내 쓸 수 있게 내보냄
-      putServerGathering,  // //추가
       sendMessage,
       deleteArchive,
       addAssistant,
       clearAssistant,
-      toggleFriendRequest,
     }),
-    // //수정 의존성 배열에 putServerGatherings, putServerGathering 추가 (이 값들이 바뀌면 다시 묶어 줌)
-    [data, gatherings, getGathering, isJoined, memberCount, messagesOf, updateProfile, setPrefs, dismissPlace, restorePlaces, setExpanded, join, leave, createGathering, putServerGatherings, putServerGathering, sendMessage, deleteArchive, addAssistant, clearAssistant, toggleFriendRequest],
+    [data, gatherings, getGathering, isJoined, memberCount, messagesOf, updateProfile, setPrefs, dismissPlace, restorePlaces, setExpanded, join, leave, createGathering, sendMessage, deleteArchive, addAssistant, clearAssistant],
   );
 
   return <WorldContext.Provider value={value}>{children}</WorldContext.Provider>;

@@ -3,8 +3,9 @@ import { ScreenShell } from '../components/ScreenShell';
 import { logout } from '../api/auth';
 import { useServerProfile } from '../lib/useServerProfile';
 import { BellButton, BottomNav, ConfirmDialog } from '../components/TripParts';
+import { ProfileInfoLines, toVisibility } from '../components/ProfileInfo';
 import { Avatar } from '../components/WorldParts';
-import { bookOpen, chevronRight20, palette, pencil, settingsGear, shieldCheck, sliders } from '../components/icons';
+import { bookOpen, chevronRight20, palette, pencil, settingsGear, shieldCheck, sliders, users } from '../components/icons';
 import { todayISO } from '../lib/dates';
 import { useNav } from '../lib/navigation';
 import { Trip, tripDates, tripTitle, useTrips } from '../lib/tripStore';
@@ -35,7 +36,7 @@ export function useNotebookStats() {
 }
 
 /** Mobile 20 Profile · 나의 수첩 */
-export function MyPage() {
+export function MyProfile() {
   const { push, reset } = useNav();
   const { trips } = useTrips();
   const { profile } = useWorld();
@@ -50,7 +51,7 @@ export function MyPage() {
     await logout();
     setLoggingOut(false);
     setConfirmLogout(false);
-    reset({ name: 'onboarding' });
+    reset({ name: 'login' });
   };
   const stats = useNotebookStats();
   const today = todayISO().replace(/-/g, '.');
@@ -78,13 +79,15 @@ export function MyPage() {
         <Avatar nickname={profile.nickname} avatar={profile.avatar} size={70} />
         <div>
           <h2>{profile.nickname}</h2>
-          <p>
-            인연 닉네임 · {profile.privacy.nickname ? profile.nickname : '비공개'}
-            <br />
-            실명·연락처 공유 {profile.privacy.contact ? '켜짐' : '꺼짐'}
-            <br />
-            {profile.intro || '소개를 적어 보세요'}
-          </p>
+          <ProfileInfoLines
+            nameVisibility={toVisibility(profile.privacy.name)}
+            name={profile.realName}
+            phoneVisibility={toVisibility(profile.privacy.contact)}
+            phone={profile.phone}
+            bio={profile.intro}
+            emptyBio="소개를 적어 보세요"
+            mine
+          />
         </div>
         <button type="button" className="icon-button" onClick={() => push({ name: 'profileEdit' })} aria-label="프로필 수정">
           <img src={pencil} alt="" width={19} height={19} />
@@ -159,6 +162,11 @@ export function MyPage() {
           세부 설정
         </h2>
         <nav className="settings-links" aria-label="세부 설정">
+          <button type="button" className="row-link" onClick={() => push({ name: 'friends' })}>
+            <img src={users} alt="" width={22} height={22} />
+            친구 목록
+            <img src={chevronRight20} alt="" width={20} height={20} />
+          </button>
           <button type="button" className="row-link" onClick={() => push({ name: 'settings' })}>
             <img src={sliders} alt="" width={22} height={22} />
             여행 취향 설정
@@ -166,7 +174,7 @@ export function MyPage() {
           </button>
           <button type="button" className="row-link" onClick={() => push({ name: 'settings', section: 'privacy' })}>
             <img src={shieldCheck} alt="" width={22} height={22} />
-            닉네임·공개 범위·대화 보관 설정
+            공개 범위·대화 보관 설정
             <img src={chevronRight20} alt="" width={20} height={20} />
           </button>
           <button type="button" className="row-link" onClick={() => push({ name: 'settings', section: 'color' })}>

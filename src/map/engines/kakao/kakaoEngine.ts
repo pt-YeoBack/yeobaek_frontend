@@ -1,31 +1,60 @@
-// [지도] //추가 카카오api 넣어야함 (JavaScript 키 → .env.local 의 VITE_KAKAO_MAP_KEY)
-// 카카오 어댑터: 우리 리모컨(MapHandle) 버튼을 카카오 말로 바꿔 줘요.
-import { MAP_COLORS, MAP_KEYS } from '../../core/config';
-import { addScript, loadOnce } from '../../core/loadScript';
+/**
+ * 카카오 지도 엔진 (한국) — 지도 표시 · 마커 · 선 · 클릭
+ * 장소 검색 · 주소 변환은 팀원 B 가 search.ts 에 PlaceSearcher 로 구현한다
+ * (SDK 의 services 라이브러리를 이미 같이 불러 둔다: kakao.maps.services.Places / Geocoder).
+ *
+ * SDK: //dapi.kakao.com/v2/maps/sdk.js?appkey=JavaScript키&autoload=false&libraries=services
+ * 카카오 지도는 한국만 그린다. zoom 은 구글 기준으로 받아 카카오 level(1~14, 작을수록 확대)로 바꾼다.
+ */
+import { DEFAULT_ZOOM, MAP_COLORS, MAP_CONFIG } from '../../core/config';
+import { loadScript } from '../../core/loadScript';
 import { createMarkerElement } from '../../core/markerElement';
-import type { LatLng, MapEngine, MapHandle, MapInstance } from '../../core/types';
+import type { LatLng, MapEngine, MapHandle, MapMarker, MapPolyline } from '../../core/types';
 
-// 카카오 level 은 작을수록 확대, 구글 zoom 은 클수록 확대라서 뒤집어요 (zoom 17 ≒ level 3)
-const toLevel = (zoom: number) => Math.min(14, Math.max(1, Math.round(20 - zoom)));
-const toZoom = (level: number) => 20 - level;
+/* eslint-disable @typescript-eslint/no-explicit-any */
+type KakaoNs = any;
 
-function load(): Promise<void> {
-  return loadOnce('kakao', async () => {
-    // 카카오api 넣어야함: MAP_KEYS.kakao 가 비어 있으면 MapView 가 여기까지 오지 않아요
-    const query = new URLSearchParams({ appkey: MAP_KEYS.kakao, libraries: 'services', autoload: 'false' });
-    await addScript(`https://dapi.kakao.com/v2/maps/sdk.js?${query}`);
-    await new Promise<void>((resolve) => (window as any).kakao.maps.load(() => resolve()));
-  });
+declare global {
+  interface Window {
+    kakao?: KakaoNs;
+  }
 }
 
-function create(container: HTMLElement, options: { center: LatLng; zoom: number }): MapInstance {
-  const maps = (window as any).kakao.maps;
-  const point = (p: LatLng) => new maps.LatLng(p.lat, p.lng);
-  const map = new maps.Map(container, { center: point(options.center), level: toLevel(options.zoom) });
+/** 구글 zoom(클수록 확대) ↔ 카카오 level(작을수록 확대). 대략 zoom 17 ≈ level 3 */
+export function zoomToKakaoLevel(zoom: number): number {
+  return Math.min(14, Math.max(1, Math.round(20 - zoom)));
+}
+export function kakaoLevelToZoom(level: number): number {
+  return 20 - level;
+}
 
-  let overlays: any[] = []; // 지금 찍혀 있는 핀
-  let lines: any[] = []; // 지금 그려진 선
-  const clicks = new Set<(event: any) => void>();
+let ready: Promise<void> | null = null;
+
+function loadKakao(): Promise<void> {
+  if (window.kakao?.maps?.Map) return Promise.resolve();
+  if (ready) return ready;
+  const params = new URLSearchParams({ appkey: MAP_CONFIG.kakaoAppKey, autoload: 'false', libraries: 'services' });
+  ready = loadScript(`https://dapi.kakao.com/v2/maps/sdk.js?${params}`)
+    .then(() => new Promise<void>((resolve) => window.kakao.maps.load(() => resolve())))
+    .catch((e) => {
+      ready = null;
+      throw e;
+    });
+  return ready;
+}
+
+function createHandle(container: HTMLElement, options: { center: LatLng; zoom: number }): MapHandle {
+  const k = window.kakao;
+  const toKakao = (p: LatLng) => new k.maps.LatLng(p.lat, p.lng);
+
+  const map = new k.maps.Map(container, {
+    center: toKakao(options.center),
+    level: zoomToKakaoLevel(options.zoom ?? DEFAULT_ZOOM),
+  });
+  map.addControl(new k.maps.ZoomControl(), k.maps.ControlPosition.RIGHT);
+
+  let overlays: any[] = [];
+  let lines: any[] = [];
 
   const clearOverlays = () => {
     overlays.forEach((o) => o.setMap(null));
@@ -36,84 +65,81 @@ function create(container: HTMLElement, options: { center: LatLng; zoom: number 
     lines = [];
   };
 
-  const handle: MapHandle = {
+  // 공통 HTML 마커를 CustomOverlay 로 올린다 (구글과 같은 모양)
+  const addMarker = (m: MapMarker) =>
+    new k.maps.CustomOverlay({
+      map,
+      position: toKakao(m.position),
+      content: createMarkerElement(m),
+      xAnchor: 0.5,
+      yAnchor: 0.5,
+      clickable: Boolean(m.onClick),
+      zIndex: m.selected ? 10 : 1,
+    });
+
+  const addLine = (l: MapPolyline) =>
+    new k.maps.Polyline({
+      map,
+      path: l.path.map(toKakao),
+      strokeColor: l.color ?? MAP_COLORS.brand,
+      strokeWeight: l.width ?? 5,
+      strokeOpacity: 0.85,
+      strokeStyle: l.dashed ? 'shortdash' : 'solid',
+    });
+
+  return {
+    provider: 'kakao',
     native: map,
     setCenter(center, zoom) {
-      if (zoom !== undefined) map.setLevel(toLevel(zoom));
-      map.setCenter(point(center));
+      map.setCenter(toKakao(center));
+      if (zoom !== undefined) map.setLevel(zoomToKakaoLevel(zoom));
     },
     getCenter() {
       const c = map.getCenter();
       return { lat: c.getLat(), lng: c.getLng() };
     },
     getZoom() {
-      return toZoom(map.getLevel());
+      return kakaoLevelToZoom(map.getLevel());
     },
-    fitBounds(points, padding = 32) {
-      if (!points.length) return;
-      const first = points[0];
-      // 한 점뿐이면 확대는 그대로 두고 이동만
-      if (points.every((p) => p.lat === first.lat && p.lng === first.lng)) {
-        map.setCenter(point(first));
+    fitBounds(points, paddingPx = 48) {
+      if (points.length === 0) return;
+      if (points.length === 1) {
+        map.setCenter(toKakao(points[0]));
         return;
       }
-      const bounds = new maps.LatLngBounds();
-      points.forEach((p) => bounds.extend(point(p)));
-      map.setBounds(bounds, padding, padding, padding, padding);
+      const bounds = new k.maps.LatLngBounds();
+      points.forEach((p) => bounds.extend(toKakao(p)));
+      map.setBounds(bounds, paddingPx, paddingPx, paddingPx, paddingPx);
     },
-    setMarkers(markers) {
+    setMarkers(next) {
       clearOverlays();
-      overlays = markers.map(
-        (m) =>
-          new maps.CustomOverlay({
-            map,
-            position: point(m.position),
-            content: createMarkerElement(m, true),
-            xAnchor: 0.5,
-            yAnchor: 0.5,
-            zIndex: m.selected ? 2 : 1,
-            clickable: true, // 핀을 눌렀을 때 지도 클릭까지 같이 일어나지 않게
-          }),
-      );
+      overlays = next.map(addMarker);
     },
     setPolylines(next) {
       clearLines();
-      lines = next.map(
-        (l) =>
-          new maps.Polyline({
-            map,
-            path: l.path.map(point),
-            strokeWeight: 5,
-            strokeColor: l.color ?? MAP_COLORS.line,
-            strokeOpacity: 0.9,
-            strokeStyle: l.dashed ? 'shortdash' : 'solid',
-          }),
-      );
+      lines = next.map(addLine);
     },
     onClick(listener) {
-      const wrapped = (event: any) => listener({ lat: event.latLng.getLat(), lng: event.latLng.getLng() });
-      maps.event.addListener(map, 'click', wrapped);
-      clicks.add(wrapped);
-      return () => {
-        if (clicks.delete(wrapped)) maps.event.removeListener(map, 'click', wrapped);
-      };
+      const handler = (e: any) => listener({ lat: e.latLng.getLat(), lng: e.latLng.getLng() });
+      k.maps.event.addListener(map, 'click', handler);
+      return () => k.maps.event.removeListener(map, 'click', handler);
     },
     relayout() {
+      // 카카오 지도는 컨테이너 크기가 바뀌면 직접 다시 그려야 한다
       const center = map.getCenter();
       map.relayout();
       map.setCenter(center);
     },
-  };
-
-  return {
-    handle,
     destroy() {
       clearOverlays();
       clearLines();
-      clicks.forEach((c) => maps.event.removeListener(map, 'click', c));
-      clicks.clear();
+      container.innerHTML = '';
     },
   };
 }
 
-export const kakaoEngine: MapEngine = { id: 'kakao', hasKey: () => Boolean(MAP_KEYS.kakao), load, create };
+export const kakaoEngine: MapEngine = {
+  id: 'kakao',
+  load: loadKakao,
+  createMap: createHandle,
+};

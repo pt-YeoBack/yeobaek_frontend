@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { fetchProfile, toLocalProfile } from '../api/profile';
+import { fetchMyProfile, toLocalProfile } from '../api/profile';
 import { useWorld } from './worldStore';
 
 /**
@@ -18,7 +18,7 @@ export function useServerProfile(enabled = true) {
     const ticket = ++latest.current;
     setLoading(true);
     setError(null);
-    const result = await fetchProfile();
+    const result = await fetchMyProfile();
     if (ticket !== latest.current) return; // 더 새 요청이 있으면 무시
     setLoading(false);
     if (result.ok) updateProfile(toLocalProfile(result.profile));

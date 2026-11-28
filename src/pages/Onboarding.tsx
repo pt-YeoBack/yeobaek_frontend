@@ -51,11 +51,9 @@ export function Onboarding() {
         </ul>
       </div>
       <div className="onboarding-actions">
-        <button type="button" className="btn-primary btn-tall" onClick={() => push({ name: 'signup' })}>
-          계정 만들기
-        </button>
-        <button type="button" className="btn-text" onClick={() => push({ name: 'login' })}>
-          로그인
+        {/* 계정 만들기는 로그인 화면의 '회원가입'에서 */}
+        <button type="button" className="btn-primary btn-tall" onClick={() => push({ name: 'login' })}>
+          시작하기
         </button>
       </div>
     </ScreenShell>

@@ -1,172 +1,154 @@
-// [지도] //추가 카카오api 넣어야함
-// 지도 액자: 화면은 이 부품 하나만 쓰고, 안에 어느 회사 지도를 끼울지는 액자가 정해요.
-//  useState  = 바뀌면 화면을 다시 그리는 메모
-//  useRef    = 바뀌어도 다시 그리지 않는 주머니 메모
-//  useEffect = 화면이 뜬 뒤에 할 일 (돌려준 함수는 치울 때 실행)
-import { CSSProperties, ReactNode, useEffect, useRef, useState } from 'react';
-import { DEFAULT_CENTER, DEFAULT_ZOOM, FIT_PADDING } from './config';
+import { CSSProperties, ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { DEFAULT_CENTER, DEFAULT_ZOOM, hasKey } from './config';
 import { getEngine } from './engines';
 import { resolveProvider } from './region';
 import type { LatLng, MapHandle, MapMarker, MapPolyline, MapProviderId } from './types';
 
 export interface MapViewProps {
-  /** 나라 코드. KR → 카카오, 그 외 → 구글 */
+  /** 나라 코드(KR → 카카오, 그 외 → 구글). provider 를 직접 주면 무시 */
   country?: string | null;
-  /** 직접 지정 (country 보다 우선) */
+  /** 공급자를 직접 지정할 때 */
   provider?: MapProviderId;
-  /** 처음 중심 */
+  /** 처음 중심 (없으면 공급자 기본 중심). 나라 코드가 없으면 이 좌표로 공급자를 고른다 */
   center?: LatLng;
-  /** 처음 확대 (구글 기준, 기본 14) */
+  /** 구글 기준 zoom (기본 14) */
   zoom?: number;
-  /** useMemo 로 만들어서 넘기기 */
   markers?: MapMarker[];
-  /** useMemo 로 만들어서 넘기기 */
   polylines?: MapPolyline[];
-  /** 마커 · 선의 위치가 바뀌면 전부 보이게 맞춤 */
+  /** true 면 마커 · 선이 바뀔 때마다 모두 보이도록 화면을 맞춘다 */
   fitToContent?: boolean;
+  /** 지도 빈 곳을 눌렀을 때 (위치 고르기 등) */
   onMapClick?: (at: LatLng) => void;
+  /** 지도가 만들어지면 손잡이를 받는다 (직접 이동 · 맞추기 등) */
   onReady?: (map: MapHandle) => void;
-  /** 지도 위에 겹칠 버튼 등 */
-  children?: ReactNode;
   className?: string;
-  /** 기본 높이 320px */
   style?: CSSProperties;
+  /** 지도 위에 겹쳐 올릴 화면 요소 (검색창 · 버튼 등) */
+  children?: ReactNode;
 }
 
-const NO_MARKERS: MapMarker[] = []; // 매번 새 [] 를 만들면 계속 다시 그려서 하나를 돌려 씀
-const NO_LINES: MapPolyline[] = [];
+type Status = 'loading' | 'ready' | 'error' | 'no-key';
 
-// :where() = 우선순위 0 → 화면이 준 className · style 이 항상 이겨요
-const CSS = [
-  ':where(.yb-map){position:relative;flex-shrink:0;width:100%;height:320px;overflow:hidden;background:#eef3fa;isolation:isolate}',
-  ':where(.yb-map-canvas){position:absolute;inset:0;z-index:0}',
-  '.yb-map-canvas img{max-width:none}', // 지도 타일이 찌그러지지 않게
-  ':where(.yb-map-message){position:absolute;inset:0;display:flex;align-items:center;justify-content:center;margin:0;padding:16px;text-align:center;font-size:13px;color:#59677a;pointer-events:none}',
-  ':where(.yb-map-overlay){position:absolute;inset:0;z-index:1;pointer-events:none}',
-  ':where(.yb-map-overlay > *){pointer-events:auto}',
-].join('');
+const STATUS_TEXT: Record<Exclude<Status, 'ready'>, string> = {
+  loading: '지도를 불러오는 중…',
+  error: '지도를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.',
+  'no-key': '지도 키가 설정되지 않았어요. (.env.local 확인)',
+};
 
-type Status = { handle: MapHandle } | { error: true } | null; // null = 불러오는 중
+/**
+ * 지도 하나를 그리는 공통 컴포넌트.
+ * 공급자(구글 · 카카오)가 달라도 같은 props 로 쓰고, 마커 · 선은 선언형으로 넘긴다.
+ *
+ *   <MapView country="KR" markers={[...]} polylines={[...]} fitToContent />
+ */
+export function MapView({
+  country,
+  provider,
+  center,
+  zoom = DEFAULT_ZOOM,
+  markers,
+  polylines,
+  fitToContent = false,
+  onMapClick,
+  onReady,
+  className,
+  style,
+  children,
+}: MapViewProps) {
+  const providerId = provider ?? resolveProvider({ country, at: center });
+  const containerRef = useRef<HTMLDivElement>(null);
+  const handleRef = useRef<MapHandle | null>(null);
+  const [status, setStatus] = useState<Status>(hasKey(providerId) ? 'loading' : 'no-key');
 
-export function MapView(props: MapViewProps) {
-  const { markers = NO_MARKERS, polylines = NO_LINES, fitToContent, className, style, children } = props;
+  // 처음 값 · 최신 콜백은 ref 로 들고 있어 지도를 다시 만들지 않는다
+  const initialView = useRef({ center, zoom });
+  initialView.current = { center, zoom };
+  const onReadyRef = useRef(onReady);
+  onReadyRef.current = onReady;
 
-  const firstPoint = props.center ?? markers[0]?.position ?? polylines[0]?.path[0];
-  const provider = props.provider ?? resolveProvider(props.country, firstPoint);
-  const engine = getEngine(provider);
-  const hasKey = engine.hasKey();
-
-  const canvas = useRef<HTMLDivElement>(null);
-  const [status, setStatus] = useState<Status>(null);
-  const handle = status && 'handle' in status ? status.handle : null;
-
-  // 최신 props 를 주머니에 보관 → 콜백이 바뀌어도 지도를 새로 만들지 않음
-  const latest = useRef({ props, firstPoint });
+  // 1. 공급자가 정해지면 SDK 로드 → 지도 생성 (공급자가 바뀌면 새로 만든다)
   useEffect(() => {
-    latest.current = { props, firstPoint };
-  });
-
-  // ① 지도 만들기. 회사가 바뀌면 치우고 다시 만듦
-  useEffect(() => {
-    if (!hasKey) return;
+    if (!hasKey(providerId)) {
+      setStatus('no-key');
+      return undefined;
+    }
     let cancelled = false;
-    let cleanup = () => {};
-
+    setStatus('loading');
+    const engine = getEngine(providerId);
     engine
       .load()
       .then(() => {
-        if (cancelled || !canvas.current) return;
-        const el = document.createElement('div');
-        el.style.width = '100%';
-        el.style.height = '100%';
-        canvas.current.append(el);
-        cleanup = () => el.remove();
-
-        const now = latest.current;
-        const map = engine.create(el, {
-          center: now.firstPoint ?? DEFAULT_CENTER[provider],
-          zoom: now.props.zoom ?? DEFAULT_ZOOM,
+        if (cancelled || !containerRef.current) return;
+        const view = initialView.current;
+        const handle = engine.createMap(containerRef.current, {
+          center: view.center ?? DEFAULT_CENTER[providerId],
+          zoom: view.zoom,
         });
-        const stopClick = map.handle.onClick((at) => latest.current.props.onMapClick?.(at));
-        cleanup = () => {
-          stopClick();
-          map.destroy();
-          el.remove();
-        };
-
-        setStatus({ handle: map.handle });
-        now.props.onReady?.(map.handle);
+        handleRef.current = handle;
+        setStatus('ready');
+        onReadyRef.current?.(handle);
       })
-      .catch((error) => {
+      .catch((e) => {
         if (cancelled) return;
-        console.error('지도를 불러오지 못했어요.', error);
-        setStatus({ error: true });
+        console.error(e);
+        setStatus('error');
       });
-
     return () => {
       cancelled = true;
-      cleanup();
-      setStatus(null);
+      handleRef.current?.destroy();
+      handleRef.current = null;
     };
-  }, [engine, hasKey, provider]);
+  }, [providerId]);
 
-  // ② 핀 · 선 갈아 끼우기
+  const ready = status === 'ready';
+
+  // 2. 중심 · 확대 변경 (fitToContent 일 때는 내용에 맞추므로 따라가지 않는다)
   useEffect(() => {
-    handle?.setMarkers(markers);
-  }, [handle, markers]);
+    if (!ready || fitToContent || !center) return;
+    handleRef.current?.setCenter(center, zoom);
+  }, [ready, fitToContent, center?.lat, center?.lng, zoom]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // 3. 마커 · 선
   useEffect(() => {
-    handle?.setPolylines(polylines);
-  }, [handle, polylines]);
-
-  // ③ 전부 보이게. 핀을 '선택'만 한 때는 위치가 그대로라 확대가 튀지 않아요
-  const pointsKey = fitToContent
-    ? JSON.stringify([...markers.map((m) => m.position), ...polylines.flatMap((l) => l.path)])
-    : '[]';
-
+    if (ready) handleRef.current?.setMarkers(markers ?? []);
+  }, [ready, markers]);
   useEffect(() => {
-    if (!handle) return;
-    const points = JSON.parse(pointsKey) as LatLng[];
-    if (points.length && canvas.current?.clientWidth) handle.fitBounds(points, FIT_PADDING);
-  }, [handle, pointsKey]);
+    if (ready) handleRef.current?.setPolylines(polylines ?? []);
+  }, [ready, polylines]);
 
-  // ④ 크기가 바뀌면 다시 그리기
+  // 4. 내용에 화면 맞추기
+  const contentPoints = useMemo(
+    () => [...(markers ?? []).map((m) => m.position), ...(polylines ?? []).flatMap((l) => l.path)],
+    [markers, polylines],
+  );
   useEffect(() => {
-    const box = canvas.current;
-    if (!handle || !box) return;
-    let wasHidden = !box.clientWidth || !box.clientHeight;
-    const observer = new ResizeObserver(() => {
-      if (!box.clientWidth || !box.clientHeight) {
-        wasHidden = true;
-        return;
-      }
-      handle.relayout();
-      if (!wasHidden) return;
-      wasHidden = false;
-      const points = JSON.parse(pointsKey) as LatLng[];
-      if (points.length) handle.fitBounds(points, FIT_PADDING); // 숨어 있다가 나타나면 다시 맞춤
-    });
-    observer.observe(box);
+    if (ready && fitToContent && contentPoints.length > 0) handleRef.current?.fitBounds(contentPoints);
+  }, [ready, fitToContent, contentPoints]);
+
+  // 5. 지도 클릭
+  useEffect(() => {
+    if (!ready || !onMapClick || !handleRef.current) return undefined;
+    return handleRef.current.onClick(onMapClick);
+  }, [ready, onMapClick]);
+
+  // 6. 컨테이너 크기 변화 (바텀시트 열림 등) → 다시 그리기
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!ready || !el || typeof ResizeObserver === 'undefined') return undefined;
+    const observer = new ResizeObserver(() => handleRef.current?.relayout());
+    observer.observe(el);
     return () => observer.disconnect();
-  }, [handle, pointsKey]);
-
-  let message = '';
-  if (!hasKey) message = '지도 키가 설정되지 않았어요';
-  else if (status && 'error' in status) message = '지도를 불러오지 못했어요';
-  else if (!status) message = '지도를 불러오는 중…';
+  }, [ready]);
 
   return (
-    <div className={className ? `yb-map ${className}` : 'yb-map'} style={style} data-provider={provider}>
-      <style href="yb-map" precedence="default">
-        {CSS}
-      </style>
-      <div className="yb-map-canvas" ref={canvas} />
-      {message && (
-        <p className="yb-map-message" role="status">
-          {message}
-        </p>
+    <div className={`map-view${className ? ` ${className}` : ''}`} style={style} data-provider={providerId}>
+      <div ref={containerRef} className="map-view-canvas" />
+      {status !== 'ready' && (
+        <div className={`map-view-status is-${status}`} role={status === 'loading' ? 'status' : 'alert'}>
+          {STATUS_TEXT[status]}
+        </div>
       )}
-      {children && <div className="yb-map-overlay">{children}</div>}
+      {children}
     </div>
   );
 }

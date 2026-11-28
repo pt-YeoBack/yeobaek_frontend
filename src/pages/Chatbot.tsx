@@ -27,7 +27,7 @@ export function Chatbot({ onClose }: { onClose: () => void }) {
   const endRef = useRef<HTMLDivElement>(null);
   const timer = useRef<number | null>(null);
   const log = world.assistantLog;
-  const nickname = world.profile.privacy.nickname ? world.profile.nickname : '여행자';
+  const nickname = world.profile.nickname;
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ block: 'end' });

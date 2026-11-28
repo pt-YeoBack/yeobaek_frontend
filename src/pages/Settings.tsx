@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react';
-import { saveSettings, SettingsPatch } from '../api/profile';
+import { saveSettings, ProfileSettingsRequest } from '../api/profile';
 import { ScreenShell } from '../components/ScreenShell';
 import { BellButton, BottomNav } from '../components/TripParts';
 import { ChoiceChips, Switch } from '../components/WorldParts';
+import { toVisibility, VISIBILITY_LABEL, VISIBILITY_OPTIONS, type Visibility } from '../components/ProfileInfo';
 import { checkWhite, palette, shieldCheck, sliders } from '../components/icons';
 import { ACCENT_PALETTES, isCustomAccent, paletteOf, swatchGradient } from '../lib/accent';
 import { useAppState } from '../lib/appState';
@@ -23,7 +24,7 @@ export function Settings({ route }: { route: Extract<Route, { name: 'settings' }
    * 화면에 먼저 반영하고 서버에 저장한다 (PATCH /api/profile/settings).
    * 저장에 실패하면 이전 값으로 되돌리고 알려 준다.
    */
-  const persist = async (patch: SettingsPatch, next: Partial<Profile>, previous: Partial<Profile>) => {
+  const persist = async (patch: ProfileSettingsRequest, next: Partial<Profile>, previous: Partial<Profile>) => {
     updateProfile(next);
     const result = await saveSettings(patch);
     if (!result.ok) {
@@ -60,9 +61,9 @@ export function Settings({ route }: { route: Extract<Route, { name: 'settings' }
 
   const toggle = (list: string[], v: string) => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
   const setPrivacy = (patch: Partial<typeof profile.privacy>) => {
-    const server: SettingsPatch = {};
-    if (patch.nickname !== undefined) server.aliasPublic = patch.nickname;
-    if (patch.contact !== undefined) server.phonePublic = patch.contact;
+    const server: ProfileSettingsRequest = {};
+    if (patch.name !== undefined) server.nameVisibility = patch.name;
+    if (patch.contact !== undefined) server.phoneVisibility = patch.contact;
     if (patch.autosave !== undefined) server.noteAutoSave = patch.autosave;
     void persist(server, { privacy: { ...profile.privacy, ...patch } }, { privacy: profile.privacy });
   };
@@ -112,19 +113,19 @@ export function Settings({ route }: { route: Extract<Route, { name: 'settings' }
       <section aria-labelledby="privacy-title" ref={privacyRef}>
         <h2 id="privacy-title" className="guidance-title settings-heading">
           <img src={shieldCheck} alt="" width={22} height={22} />
-          닉네임·공개 범위·대화 보관 설정
+          공개 범위·대화 보관 설정
         </h2>
         <div className="settings-box settings-switches">
-          <Switch
-            label="닉네임 공개"
-            description="끄면 인연 모임과 대화에서 닉네임 대신 '여행자'로 표시돼요."
-            checked={profile.privacy.nickname}
-            onChange={(v) => setPrivacy({ nickname: v })}
+          <ScopeChoice
+            label="실명 공개 범위"
+            description="다른 회원이 내 프로필에서 실명을 볼 수 있는 범위예요. 보이지 않으면 '비공개'로 표시돼요."
+            value={toVisibility(profile.privacy.name)}
+            onChange={(v) => setPrivacy({ name: v })}
           />
-          <Switch
-            label="연락처 공개"
-            description="켜도 이 데모에서는 누구에게도 연락처가 전달되지 않아요."
-            checked={profile.privacy.contact}
+          <ScopeChoice
+            label="연락처 공개 범위"
+            description="다른 회원이 내 프로필에서 연락처를 볼 수 있는 범위예요. 보이지 않으면 '비공개'로 표시돼요."
+            value={toVisibility(profile.privacy.contact)}
             onChange={(v) => setPrivacy({ contact: v })}
           />
           <Switch
@@ -197,12 +198,46 @@ export function Settings({ route }: { route: Extract<Route, { name: 'settings' }
           onClick={async () => {
             // 백엔드 토큰 쿠키 삭제 + localStorage(token, yeobaek.member) 정리
             await logout();
-            reset({ name: 'onboarding' });
+            reset({ name: 'login' });
           }}
         >
           로그아웃
         </button>
       </section>
     </ScreenShell>
+  );
+}
+
+/** 공개 범위 고르기: 비공개 · 친구만 · 공개 중 하나 */
+function ScopeChoice({
+  label,
+  description,
+  value,
+  onChange,
+}: {
+  label: string;
+  description: string;
+  value: Visibility;
+  onChange: (v: Visibility) => void;
+}) {
+  const labels = VISIBILITY_OPTIONS.map((v) => VISIBILITY_LABEL[v]);
+  return (
+    <div className="switch-row scope-row">
+      <span className="switch-text">
+        <strong>{label}</strong>
+        <span>{description}</span>
+      </span>
+      <ChoiceChips
+        label={label}
+        options={labels}
+        selected={[VISIBILITY_LABEL[value]]}
+        multiple={false}
+        variant="soft"
+        onToggle={(l) => {
+          const next = VISIBILITY_OPTIONS.find((v) => VISIBILITY_LABEL[v] === l);
+          if (next && next !== value) onChange(next);
+        }}
+      />
+    </div>
   );
 }

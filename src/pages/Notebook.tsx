@@ -11,7 +11,7 @@ import { largeActivityPhoto } from '../lib/nearby';
 import { sortActivities, tripDates, useTrips } from '../lib/tripStore';
 import { useWorld } from '../lib/worldStore';
 import { KIND_LABEL } from './Map';
-import { tripStatus, useNotebookStats } from './MyPage';
+import { tripStatus, useNotebookStats } from './MyProfile';
 import { withWhom } from '../utils/tripFormat';
 
 /** Mobile 21 Notebook Day · 날짜별 수첩 기록 */

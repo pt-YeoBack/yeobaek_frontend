@@ -1,6 +1,6 @@
 import { ScreenShell } from '../components/ScreenShell';
 import { BellButton, BottomNav } from '../components/TripParts';
-import { aiIcon, plusBrand, plusCircle28 } from '../components/icons';
+import { plusBrand, plusCircle28 } from '../components/icons';
 import jejuPhoto from '../assets/destination-jeju.jpg';
 import { useAppState } from '../lib/appState';
 import { useNav } from '../lib/navigation';
@@ -26,7 +26,6 @@ export function ScheduleList() {
       title="나의 일정"
       noBackSlot
       trailing={<BellButton />}
-      surface="mist"
       contentClassName="schedules-content"
       bottomNav={<BottomNav active="schedule" />}
     >
@@ -71,12 +70,6 @@ export function ScheduleList() {
           </button>
         </li>
       </ul>
-
-      <section className="ai-tile" aria-labelledby="ai-tile-title">
-        <img src={aiIcon} alt="" width={36} height={36} />
-        <h2 id="ai-tile-title">여행의 여백을 AI가 채워줘요</h2>
-        <p>일정, 장소, 인원을 입력하면 AI가 추천 루트를 만들어드려요.</p>
-      </section>
 
       <button type="button" className="btn-outline btn-icon" onClick={newTrip}>
         <img src={plusBrand} alt="" width={22} height={22} />새 여행 일정 만들기

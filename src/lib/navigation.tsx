@@ -30,7 +30,8 @@ import type { CodePurpose } from '../api/auth';
  *  archive     Mobile 22 Archived Conversation
  *  profileEdit Mobile 21 profile 수정 (같은 번호의 두 번째 프레임)
  *  settings    Mobile 22 profile 수정2 · 세부 설정 (같은 번호의 두 번째 프레임)
- *  member      Mobile 20-1 회원 프로필 (모임 대화에서 다른 참여자 닉네임을 눌렀을 때)
+ *  member      Mobile 20-1 회원 프로필 (MemberProfile, 다른 회원의 닉네임을 눌렀을 때)
+ *  friends     친구 목록 · 받은 친구 신청 (FriendList, 프로필의 친구 메뉴)
  */
 export type Route =
   | { name: 'splash'; stay?: boolean }
@@ -59,7 +60,12 @@ export type Route =
   | { name: 'archive'; gatheringId: string }
   | { name: 'profileEdit' }
   | { name: 'settings'; section?: 'privacy' | 'color' }
-  | { name: 'member'; nickname: string; gatheringId?: string };
+  /**
+   * 회원 프로필. memberId 로 서버에서 불러온다 (내 id 면 내 프로필 화면으로 바꿔 준다).
+   * nickname 만 있으면 예시 데이터로 보여 준다 (모임 API 가 회원 id 를 주기 전까지 쓰는 데모용)
+   */
+  | { name: 'member'; memberId?: number; nickname?: string; gatheringId?: string }
+  | { name: 'friends' };
 
 interface NavApi {
   route: Route;
@@ -84,7 +90,7 @@ const NavContext = createContext<NavApi | null>(null);
 const STACK_KEY = 'yeobaek.navStack';
 const RESTORABLE: Route['name'][] = [
   'home', 'newTrip', 'itinerary', 'schedules', 'dayPlan', 'nearby', 'suggestions', 'review',
-  'connections', 'gathering', 'gatheringNew', 'chat', 'profile', 'notebook', 'archive', 'profileEdit', 'settings', 'member',
+  'connections', 'gathering', 'gatheringNew', 'chat', 'profile', 'notebook', 'archive', 'profileEdit', 'settings', 'member', 'friends',
 ];
 /** 로그인 후 첫 화면이 될 수 있는 화면 (하단 탭의 루트) */
 const ROOTS: Route['name'][] = ['home', 'schedules', 'connections', 'profile'];
